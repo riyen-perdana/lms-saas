@@ -3,6 +3,7 @@
 import { createServerFn } from "@tanstack/react-start"
 import { getRequestHeaders } from "@tanstack/react-start/server"
 
+import { isSchoolBlocked } from "@/features/auth/policy"
 import { getSchoolAccess } from "@/features/auth/service"
 import { isPlatformAdmin } from "@/features/platform/service"
 import { auth } from "@/lib/auth"
@@ -11,6 +12,7 @@ import type { ResolvedTenant } from "@/lib/tenant/resolve"
 export type AccessState =
   | { status: "anonymous" }
   | { status: "no-access" }
+  | { status: "suspended" }
   | {
       status: "ok"
       user: { id: string; name: string; email: string }
@@ -33,6 +35,16 @@ export const getAccess = createServerFn({ method: "GET" }).handler(
     const { tenant } = context
     const base = { area: tenant.area, schoolName: tenant.school?.name ?? null }
     const reply = (access: AccessState): LoginContext => ({ ...base, access })
+
+    // Sekolah ditangguhkan: tutup untuk semua orang, termasuk sesi yang sudah
+    // ada dan pengunjung yang belum login (cek lebih dulu dari sesi).
+    if (
+      tenant.area === "school" &&
+      tenant.school &&
+      isSchoolBlocked(tenant.school.status)
+    ) {
+      return reply({ status: "suspended" })
+    }
 
     const session = await auth.api.getSession({ headers: getRequestHeaders() })
     if (!session) return reply({ status: "anonymous" })

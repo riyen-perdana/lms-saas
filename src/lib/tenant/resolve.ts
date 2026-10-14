@@ -39,6 +39,16 @@ export function clearTenantCache(): void {
   cache.clear()
 }
 
+/**
+ * Membuang cache satu sekolah (atau semuanya) setelah statusnya berubah,
+ * mis. penangguhan, agar berlaku seketika di proses ini. Pada deployment
+ * multi-proses, proses lain baru melihatnya setelah TTL (30 detik).
+ */
+export function invalidateTenantCache(slug?: string): void {
+  if (slug) cache.delete(slug)
+  else cache.clear()
+}
+
 export async function resolveSchoolBySlug(
   slug: string
 ): Promise<TenantSchool | null> {

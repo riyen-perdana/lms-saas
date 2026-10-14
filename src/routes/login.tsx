@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { loginSchema } from "@/features/auth/schema"
+import { SUSPENDED_MESSAGE } from "@/features/auth/policy"
 import { getAccess } from "@/features/auth/server/access"
 import { signIn, signOut } from "@/lib/auth-client"
 
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/login")({
 })
 
 function LoginPage() {
-  const { area, schoolName } = Route.useLoaderData()
+  const { area, schoolName, access } = Route.useLoaderData()
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
@@ -34,6 +35,17 @@ function LoginPage() {
   useEffect(() => setReady(true), [])
 
   const isPlatform = area === "platform"
+
+  if (access.status === "suspended") {
+    return (
+      <main className="mx-auto flex min-h-svh max-w-sm flex-col justify-center gap-2 p-6">
+        <h1 className="text-ds-page-title font-medium">{schoolName}</h1>
+        <p role="alert" className="text-ds-body text-muted-foreground">
+          {SUSPENDED_MESSAGE}
+        </p>
+      </main>
+    )
+  }
 
   if (!isPlatform && (area !== "school" || !schoolName)) {
     return (
@@ -67,9 +79,13 @@ function LoginPage() {
       }
 
       // Sesi valid belum berarti boleh masuk: cek keanggotaan di sekolah ini.
-      const { access } = await getAccess()
-      if (access.status !== "ok") {
+      const current = (await getAccess()).access
+      if (current.status !== "ok") {
         await signOut()
+        if (current.status === "suspended") {
+          setError(SUSPENDED_MESSAGE)
+          return
+        }
         setError(
           isPlatform
             ? "Akun ini bukan Super Admin."

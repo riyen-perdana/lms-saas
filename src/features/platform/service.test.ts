@@ -19,6 +19,7 @@ import {
   setSuspended,
 } from "@/features/platform/service"
 import { PrismaClient } from "@/generated/prisma/client"
+import { resolveSchoolBySlug } from "@/lib/tenant/resolve"
 
 const adminUrl = process.env.DATABASE_URL
 if (!adminUrl)
@@ -277,6 +278,21 @@ describe("setSuspended", () => {
     await expect(setSuspended(randomUUID(), true)).rejects.toMatchObject({
       code: "SCHOOL_NOT_FOUND",
     })
+  })
+})
+
+describe("cache tenant", () => {
+  it("penangguhan dan aktivasi kembali langsung terlihat oleh resolver tenant", async () => {
+    const slug = `plat-b-${suffix}`
+
+    // Isi cache lebih dulu: tanpa invalidasi, status lama bertahan 30 detik.
+    expect((await resolveSchoolBySlug(slug))?.status).not.toBe("suspended")
+
+    await setSuspended(schoolBId, true)
+    expect((await resolveSchoolBySlug(slug))?.status).toBe("suspended")
+
+    await setSuspended(schoolBId, false, NOW)
+    expect((await resolveSchoolBySlug(slug))?.status).not.toBe("suspended")
   })
 })
 

@@ -3,6 +3,7 @@ import "dotenv/config"
 import { randomUUID } from "node:crypto"
 
 import { PrismaPg } from "@prisma/adapter-pg"
+import { hashPassword } from "better-auth/crypto"
 import { expect, test, type Page } from "@playwright/test"
 
 import { PrismaClient } from "../../src/generated/prisma/client.js"
@@ -147,4 +148,76 @@ test("Super Admin mengaktifkan paket lalu menangguhkan sekolah", async ({
   expect(
     (await db.school.findUniqueOrThrow({ where: { id: school.id } })).status
   ).toBe("active")
+})
+
+test("admin sekolah yang sudah login terlempar saat sekolahnya ditangguhkan", async ({
+  browser,
+}, testInfo) => {
+  const suffix = `${randomUUID().slice(0, 6)}${testInfo.project.name === "mobile-360" ? "m" : "d"}`
+  const slug = `susp-${suffix}`
+  const email = `susp-${suffix}@sekolah.test`
+  fixtureSlugs.push(slug)
+
+  const school = await db.school.create({
+    data: {
+      slug,
+      name: `Sekolah Susp ${suffix}`,
+      level: "SMA",
+      status: "active",
+    },
+  })
+  const user = await db.user.create({
+    data: { email, name: "Admin Susp", emailVerified: true },
+  })
+  await db.account.create({
+    data: {
+      userId: user.id,
+      providerId: "credential",
+      accountId: user.id,
+      password: await hashPassword(PASSWORD),
+    },
+  })
+  await db.membership.create({
+    data: { schoolId: school.id, userId: user.id, role: "school_admin" },
+  })
+
+  const adminCtx = await browser.newContext()
+  const superCtx = await browser.newContext()
+  try {
+    // Admin sekolah login dan masuk beranda.
+    const adminPage = await adminCtx.newPage()
+    const schoolOrigin = `http://${slug}.localhost:3000`
+    await adminPage.goto(`${schoolOrigin}/login`)
+    await adminPage.getByLabel("Email").fill(email)
+    await adminPage.getByLabel("Kata sandi").fill(PASSWORD)
+    await adminPage.getByRole("button", { name: "Masuk" }).click()
+    await expect(adminPage).toHaveURL(/\/beranda$/)
+
+    // Super Admin menangguhkan sekolah itu lewat dashboard.
+    const superPage = await superCtx.newPage()
+    await login(superPage, SUPER_ADMIN)
+    await expect(superPage).toHaveURL(/\/platform$/)
+    await superPage.goto(`${APP}/platform/sekolah/${school.id}`)
+    superPage.once("dialog", (dialog) => void dialog.accept())
+    await expect(async () => {
+      await superPage
+        .getByRole("button", { name: "Tangguhkan sekolah" })
+        .click()
+      await expect(superPage.getByRole("status")).toHaveText(
+        "Sekolah ditangguhkan.",
+        { timeout: 1500 }
+      )
+    }).toPass({ timeout: 15_000 })
+
+    // Sesi lama tidak lagi berlaku: diarahkan ke login dengan pemberitahuan.
+    await adminPage.goto(`${schoolOrigin}/beranda`)
+    await expect(adminPage).toHaveURL(/\/login$/)
+    await expect(adminPage.getByRole("alert")).toContainText(
+      "Sekolah ini sedang ditangguhkan"
+    )
+  } finally {
+    await adminCtx.close()
+    await superCtx.close()
+    await db.user.deleteMany({ where: { email } })
+  }
 })

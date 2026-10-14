@@ -16,6 +16,7 @@ import {
 import { TRIAL_PLAN_CODE } from "@/features/subscription/trial"
 import type { $Enums, Prisma } from "@/generated/prisma/client"
 import { addDaysUtc, addMonthsUtc } from "@/lib/dates"
+import { invalidateTenantCache } from "@/lib/tenant/resolve"
 
 export type PlatformErrorCode =
   "SCHOOL_NOT_FOUND" | "PLAN_NOT_FOUND" | "TRIAL_PLAN_NOT_ACTIVATABLE"
@@ -267,10 +268,10 @@ export async function activatePlan(
     throw new PlatformError("TRIAL_PLAN_NOT_ACTIVATABLE")
   }
 
-  await platformDb(async (db) => {
+  const slug = await platformDb(async (db) => {
     const school = await db.school.findFirst({
       where: { id: input.schoolId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, slug: true },
     })
     if (!school) throw new PlatformError("SCHOOL_NOT_FOUND")
 
@@ -299,7 +300,11 @@ export async function activatePlan(
       where: { id: school.id },
       data: { status: "active" },
     })
+
+    return school.slug
   })
+
+  invalidateTenantCache(slug)
 }
 
 /**
@@ -312,14 +317,14 @@ export async function setSuspended(
   suspended: boolean,
   now: Date = new Date()
 ): Promise<SchoolStatus> {
-  return platformDb(async (db) => {
+  const { status, slug } = await platformDb(async (db) => {
     const school = await db.school.findFirst({
       where: { id: schoolId, deletedAt: null },
-      select: { id: true },
+      select: { id: true, slug: true },
     })
     if (!school) throw new PlatformError("SCHOOL_NOT_FOUND")
 
-    let status: SchoolStatus = "suspended"
+    let next: SchoolStatus = "suspended"
 
     if (!suspended) {
       const current = await db.subscription.findFirst({
@@ -331,7 +336,7 @@ export async function setSuspended(
         orderBy: { createdAt: "desc" },
         select: { status: true },
       })
-      status =
+      next =
         current?.status === "active"
           ? "active"
           : current?.status === "trial"
@@ -339,8 +344,13 @@ export async function setSuspended(
             : "readonly"
     }
 
-    await db.school.update({ where: { id: schoolId }, data: { status } })
+    await db.school.update({ where: { id: schoolId }, data: { status: next } })
 
-    return status
+    return { status: next, slug: school.slug }
   })
+
+  // Penangguhan harus berlaku seketika, bukan menunggu TTL cache tenant.
+  invalidateTenantCache(slug)
+
+  return status
 }
