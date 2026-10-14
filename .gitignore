@@ -25,3 +25,6 @@ src/generated
 /blob-report
 /playwright/.cache
 /coverage
+
+# Hasil driver email "console" (email yang dicetak/simpan saat development)
+/.email-outbox

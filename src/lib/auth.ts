@@ -16,6 +16,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 
 import { prisma } from "@/db/client"
+import { enqueueEmail } from "@/lib/jobs"
+import { resetPasswordEmail, verificationEmail } from "@/lib/email/templates"
 import { uuidv7 } from "@/lib/uuid"
 
 /**
@@ -46,7 +48,10 @@ export const auth = betterAuth({
     "http://localhost:*",
     "http://*.localhost:*",
     ...(process.env.APP_DOMAIN
-      ? [`https://${process.env.APP_DOMAIN}`, `https://*.${process.env.APP_DOMAIN}`]
+      ? [
+          `https://${process.env.APP_DOMAIN}`,
+          `https://*.${process.env.APP_DOMAIN}`,
+        ]
       : []),
   ],
   database: prismaAdapter(prisma, { provider: "postgresql" }),
@@ -58,8 +63,32 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
-    // Verifikasi email & reset sandi menyusul di US-02 (butuh adapter email).
+    // Verifikasi email dikirim tapi tidak menjadi syarat login (LP-04: admin
+    // bisa langsung masuk setelah mendaftar). Ubah ke true bila kebijakan berubah.
     requireEmailVerification: false,
+    resetPasswordTokenExpiresIn: 60 * 60,
+    // Setelah sandi diganti, semua sesi lama dicabut.
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: ({ user, url }) => {
+      // Tidak di-await: waktu respons tidak boleh membedakan email terdaftar
+      // dari yang tidak (enumerasi akun).
+      void enqueueEmail(
+        resetPasswordEmail({ to: user.email, name: user.name, url })
+      ).catch((error: unknown) => console.error("[auth] email reset:", error))
+      return Promise.resolve()
+    },
+  },
+  emailVerification: {
+    expiresIn: 60 * 60 * 24,
+    autoSignInAfterVerification: false,
+    sendVerificationEmail: ({ user, url }) => {
+      void enqueueEmail(
+        verificationEmail({ to: user.email, name: user.name, url })
+      ).catch((error: unknown) =>
+        console.error("[auth] email verifikasi:", error)
+      )
+      return Promise.resolve()
+    },
   },
   session: {
     expiresIn: 60 * 60 * 24 * 7,

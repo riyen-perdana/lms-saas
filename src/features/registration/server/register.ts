@@ -14,6 +14,7 @@ import {
   isSlugAvailable,
   registerSchool,
 } from "@/features/registration/service"
+import { auth } from "@/lib/auth"
 import { schoolBaseUrl } from "@/lib/tenant/host"
 
 export const checkSlug = createServerFn({ method: "GET" })
@@ -31,9 +32,21 @@ export const registerSchoolFn = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<RegisterResult> => {
     try {
       const { slug } = await registerSchool(data)
-      const host = getRequestHeaders().get("host")
+      const headers = getRequestHeaders()
+      const loginUrl = `${schoolBaseUrl(headers.get("host"), slug)}/login`
 
-      return { ok: true, slug, loginUrl: `${schoolBaseUrl(host, slug)}/login` }
+      // Email verifikasi (LP-04). Kegagalan kirim tidak boleh membatalkan
+      // pendaftaran yang sudah tersimpan; admin tetap bisa login.
+      try {
+        await auth.api.sendVerificationEmail({
+          body: { email: data.adminEmail, callbackURL: loginUrl },
+          headers,
+        })
+      } catch (error) {
+        console.error("[registration] email verifikasi gagal:", error)
+      }
+
+      return { ok: true, slug, loginUrl }
     } catch (error) {
       if (error instanceof RegistrationError) {
         return { ok: false, code: error.code, message: error.message }

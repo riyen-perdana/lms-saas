@@ -9,7 +9,9 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AturUlangSandiRouteImport } from './routes/atur-ulang-sandi'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as LupaSandiRouteImport } from './routes/lupa-sandi'
 import { Route as marketingIndexRouteImport } from './routes/(marketing)/index'
 import { Route as marketingDaftarRouteImport } from './routes/(marketing)/daftar'
 import { Route as platformPlatformRouteImport } from './routes/(platform)/platform'
@@ -20,9 +22,19 @@ import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as platformPlatformSekolahIndexRouteImport } from './routes/(platform)/platform.sekolah.index'
 import { Route as platformPlatformSekolahSchoolIdRouteImport } from './routes/(platform)/platform.sekolah.$schoolId'
 
+const AturUlangSandiRoute = AturUlangSandiRouteImport.update({
+  id: '/atur-ulang-sandi',
+  path: '/atur-ulang-sandi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LupaSandiRoute = LupaSandiRouteImport.update({
+  id: '/lupa-sandi',
+  path: '/lupa-sandi',
   getParentRoute: () => rootRouteImport,
 } as any)
 const marketingIndexRoute = marketingIndexRouteImport.update({
@@ -74,7 +86,9 @@ const platformPlatformSekolahSchoolIdRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/atur-ulang-sandi': typeof AturUlangSandiRoute
   '/login': typeof LoginRoute
+  '/lupa-sandi': typeof LupaSandiRoute
   '/daftar': typeof marketingDaftarRoute
   '/platform': typeof platformPlatformRouteWithChildren
   '/beranda': typeof schoolBerandaRoute
@@ -86,7 +100,9 @@ export interface FileRoutesByFullPath {
   '/platform/sekolah/': typeof platformPlatformSekolahIndexRoute
 }
 export interface FileRoutesByTo {
+  '/atur-ulang-sandi': typeof AturUlangSandiRoute
   '/login': typeof LoginRoute
+  '/lupa-sandi': typeof LupaSandiRoute
   '/daftar': typeof marketingDaftarRoute
   '/beranda': typeof schoolBerandaRoute
   '/api/tenant': typeof ApiTenantRoute
@@ -98,7 +114,9 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/atur-ulang-sandi': typeof AturUlangSandiRoute
   '/login': typeof LoginRoute
+  '/lupa-sandi': typeof LupaSandiRoute
   '/(marketing)/daftar': typeof marketingDaftarRoute
   '/(platform)/platform': typeof platformPlatformRouteWithChildren
   '/(school)/beranda': typeof schoolBerandaRoute
@@ -112,7 +130,9 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/atur-ulang-sandi'
     | '/login'
+    | '/lupa-sandi'
     | '/daftar'
     | '/platform'
     | '/beranda'
@@ -124,7 +144,9 @@ export interface FileRouteTypes {
     | '/platform/sekolah/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/atur-ulang-sandi'
     | '/login'
+    | '/lupa-sandi'
     | '/daftar'
     | '/beranda'
     | '/api/tenant'
@@ -135,7 +157,9 @@ export interface FileRouteTypes {
     | '/platform/sekolah'
   id:
     | '__root__'
+    | '/atur-ulang-sandi'
     | '/login'
+    | '/lupa-sandi'
     | '/(marketing)/daftar'
     | '/(platform)/platform'
     | '/(school)/beranda'
@@ -148,7 +172,9 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AturUlangSandiRoute: typeof AturUlangSandiRoute
   LoginRoute: typeof LoginRoute
+  LupaSandiRoute: typeof LupaSandiRoute
   marketingDaftarRoute: typeof marketingDaftarRoute
   platformPlatformRoute: typeof platformPlatformRouteWithChildren
   schoolBerandaRoute: typeof schoolBerandaRoute
@@ -159,11 +185,25 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/atur-ulang-sandi': {
+      id: '/atur-ulang-sandi'
+      path: '/atur-ulang-sandi'
+      fullPath: '/atur-ulang-sandi'
+      preLoaderRoute: typeof AturUlangSandiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lupa-sandi': {
+      id: '/lupa-sandi'
+      path: '/lupa-sandi'
+      fullPath: '/lupa-sandi'
+      preLoaderRoute: typeof LupaSandiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(marketing)/': {
@@ -248,7 +288,9 @@ const platformPlatformRouteWithChildren =
   platformPlatformRoute._addFileChildren(platformPlatformRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  AturUlangSandiRoute: AturUlangSandiRoute,
   LoginRoute: LoginRoute,
+  LupaSandiRoute: LupaSandiRoute,
   marketingDaftarRoute: marketingDaftarRoute,
   platformPlatformRoute: platformPlatformRouteWithChildren,
   schoolBerandaRoute: schoolBerandaRoute,

@@ -11,6 +11,7 @@ import {
   createStart,
 } from "@tanstack/react-start"
 
+import { ensureJobsStarted } from "@/lib/jobs"
 import { resolveTenant } from "@/lib/tenant/resolve"
 
 export const tenantMiddleware = createMiddleware({ type: "request" }).server(
@@ -19,6 +20,9 @@ export const tenantMiddleware = createMiddleware({ type: "request" }).server(
       request.headers.get("x-forwarded-host") ??
       request.headers.get("host") ??
       new URL(request.url).host
+
+    // Memulai antrean job (email, kedaluwarsa langganan) sekali per proses.
+    ensureJobsStarted()
 
     const tenant = await resolveTenant(host)
 

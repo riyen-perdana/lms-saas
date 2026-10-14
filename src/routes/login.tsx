@@ -2,7 +2,12 @@
 // berlaku per subdomain, dan akses ditentukan oleh `memberships` sekolah itu.
 
 import { useEffect, useState } from "react"
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
+import {
+  Link,
+  createFileRoute,
+  redirect,
+  useNavigate,
+} from "@tanstack/react-router"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -121,7 +126,15 @@ function LoginPage() {
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="password">Kata sandi</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Kata sandi</Label>
+            <Link
+              to="/lupa-sandi"
+              className="text-ds-meta text-muted-foreground underline underline-offset-4"
+            >
+              Lupa kata sandi?
+            </Link>
+          </div>
           <Input
             id="password"
             name="password"
