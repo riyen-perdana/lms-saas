@@ -1,0 +1,56 @@
+// Server function: validasi -> permission -> service (AGENTS.md aturan 3).
+
+import { createServerFn } from "@tanstack/react-start"
+import { getRequestHeaders } from "@tanstack/react-start/server"
+
+import { getSchoolAccess } from "@/features/auth/service"
+import { auth } from "@/lib/auth"
+import type { ResolvedTenant } from "@/lib/tenant/resolve"
+
+export type AccessState =
+  | { status: "anonymous" }
+  | { status: "no-access" }
+  | {
+      status: "ok"
+      user: { id: string; name: string; email: string }
+      role: string
+    }
+
+export interface LoginContext {
+  area: ResolvedTenant["area"]
+  schoolName: string | null
+  access: AccessState
+}
+
+/**
+ * Siapa yang sedang login di host ini, dan apakah ia anggota aktif sekolah
+ * subdomain ini. Di luar area sekolah selalu "anonymous" (login platform
+ * menyusul di F1).
+ */
+export const getAccess = createServerFn({ method: "GET" }).handler(
+  async ({ context }): Promise<LoginContext> => {
+    const { tenant } = context
+    const base = { area: tenant.area, schoolName: tenant.school?.name ?? null }
+    const reply = (access: AccessState): LoginContext => ({ ...base, access })
+
+    const session = await auth.api.getSession({ headers: getRequestHeaders() })
+    if (!session) return reply({ status: "anonymous" })
+
+    if (tenant.area !== "school" || !tenant.school) {
+      return reply({ status: "no-access" })
+    }
+
+    const access = await getSchoolAccess(tenant.school.id, session.user.id)
+    if (!access) return reply({ status: "no-access" })
+
+    return reply({
+      status: "ok",
+      user: {
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+      },
+      role: access.role,
+    })
+  }
+)
