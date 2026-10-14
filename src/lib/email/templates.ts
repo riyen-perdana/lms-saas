@@ -54,3 +54,26 @@ export function resetPasswordEmail(input: {
     "Jika Anda tidak memintanya, abaikan email ini; kata sandi Anda tidak berubah."
   )
 }
+
+export function contactNotificationEmail(input: {
+  to: string
+  name: string
+  email: string
+  schoolName?: string
+  message: string
+}): EmailMessage {
+  const lines = [
+    `Nama: ${input.name}`,
+    `Email: ${input.email}`,
+    `Sekolah: ${input.schoolName ?? "-"}`,
+    "",
+    input.message,
+  ]
+
+  return {
+    to: input.to,
+    subject: `Pesan kontak baru dari ${input.name} — EduSaaS`,
+    text: lines.join("\n"),
+    html: lines.map((line) => `<p>${escapeHtml(line)}</p>`).join(""),
+  }
+}

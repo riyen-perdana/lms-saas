@@ -15,6 +15,9 @@ import { Route as LupaSandiRouteImport } from './routes/lupa-sandi'
 import { Route as marketingIndexRouteImport } from './routes/(marketing)/index'
 import { Route as marketingDaftarRouteImport } from './routes/(marketing)/daftar'
 import { Route as marketingHargaRouteImport } from './routes/(marketing)/harga'
+import { Route as marketingKontakRouteImport } from './routes/(marketing)/kontak'
+import { Route as marketingPrivasiRouteImport } from './routes/(marketing)/privasi'
+import { Route as marketingSyaratRouteImport } from './routes/(marketing)/syarat'
 import { Route as platformPlatformRouteImport } from './routes/(platform)/platform'
 import { Route as schoolBerandaRouteImport } from './routes/(school)/beranda'
 import { Route as ApiTenantRouteImport } from './routes/api/tenant'
@@ -51,6 +54,21 @@ const marketingDaftarRoute = marketingDaftarRouteImport.update({
 const marketingHargaRoute = marketingHargaRouteImport.update({
   id: '/(marketing)/harga',
   path: '/harga',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const marketingKontakRoute = marketingKontakRouteImport.update({
+  id: '/(marketing)/kontak',
+  path: '/kontak',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const marketingPrivasiRoute = marketingPrivasiRouteImport.update({
+  id: '/(marketing)/privasi',
+  path: '/privasi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const marketingSyaratRoute = marketingSyaratRouteImport.update({
+  id: '/(marketing)/syarat',
+  path: '/syarat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const platformPlatformRoute = platformPlatformRouteImport.update({
@@ -97,6 +115,9 @@ export interface FileRoutesByFullPath {
   '/lupa-sandi': typeof LupaSandiRoute
   '/daftar': typeof marketingDaftarRoute
   '/harga': typeof marketingHargaRoute
+  '/kontak': typeof marketingKontakRoute
+  '/privasi': typeof marketingPrivasiRoute
+  '/syarat': typeof marketingSyaratRoute
   '/platform': typeof platformPlatformRouteWithChildren
   '/beranda': typeof schoolBerandaRoute
   '/api/tenant': typeof ApiTenantRoute
@@ -112,6 +133,9 @@ export interface FileRoutesByTo {
   '/lupa-sandi': typeof LupaSandiRoute
   '/daftar': typeof marketingDaftarRoute
   '/harga': typeof marketingHargaRoute
+  '/kontak': typeof marketingKontakRoute
+  '/privasi': typeof marketingPrivasiRoute
+  '/syarat': typeof marketingSyaratRoute
   '/beranda': typeof schoolBerandaRoute
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
@@ -127,6 +151,9 @@ export interface FileRoutesById {
   '/lupa-sandi': typeof LupaSandiRoute
   '/(marketing)/daftar': typeof marketingDaftarRoute
   '/(marketing)/harga': typeof marketingHargaRoute
+  '/(marketing)/kontak': typeof marketingKontakRoute
+  '/(marketing)/privasi': typeof marketingPrivasiRoute
+  '/(marketing)/syarat': typeof marketingSyaratRoute
   '/(platform)/platform': typeof platformPlatformRouteWithChildren
   '/(school)/beranda': typeof schoolBerandaRoute
   '/api/tenant': typeof ApiTenantRoute
@@ -144,6 +171,9 @@ export interface FileRouteTypes {
     | '/lupa-sandi'
     | '/daftar'
     | '/harga'
+    | '/kontak'
+    | '/privasi'
+    | '/syarat'
     | '/platform'
     | '/beranda'
     | '/api/tenant'
@@ -159,6 +189,9 @@ export interface FileRouteTypes {
     | '/lupa-sandi'
     | '/daftar'
     | '/harga'
+    | '/kontak'
+    | '/privasi'
+    | '/syarat'
     | '/beranda'
     | '/api/tenant'
     | '/'
@@ -173,6 +206,9 @@ export interface FileRouteTypes {
     | '/lupa-sandi'
     | '/(marketing)/daftar'
     | '/(marketing)/harga'
+    | '/(marketing)/kontak'
+    | '/(marketing)/privasi'
+    | '/(marketing)/syarat'
     | '/(platform)/platform'
     | '/(school)/beranda'
     | '/api/tenant'
@@ -189,6 +225,9 @@ export interface RootRouteChildren {
   LupaSandiRoute: typeof LupaSandiRoute
   marketingDaftarRoute: typeof marketingDaftarRoute
   marketingHargaRoute: typeof marketingHargaRoute
+  marketingKontakRoute: typeof marketingKontakRoute
+  marketingPrivasiRoute: typeof marketingPrivasiRoute
+  marketingSyaratRoute: typeof marketingSyaratRoute
   platformPlatformRoute: typeof platformPlatformRouteWithChildren
   schoolBerandaRoute: typeof schoolBerandaRoute
   ApiTenantRoute: typeof ApiTenantRoute
@@ -238,6 +277,27 @@ declare module '@tanstack/react-router' {
       path: '/harga'
       fullPath: '/harga'
       preLoaderRoute: typeof marketingHargaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(marketing)/kontak': {
+      id: '/(marketing)/kontak'
+      path: '/kontak'
+      fullPath: '/kontak'
+      preLoaderRoute: typeof marketingKontakRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(marketing)/privasi': {
+      id: '/(marketing)/privasi'
+      path: '/privasi'
+      fullPath: '/privasi'
+      preLoaderRoute: typeof marketingPrivasiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(marketing)/syarat': {
+      id: '/(marketing)/syarat'
+      path: '/syarat'
+      fullPath: '/syarat'
+      preLoaderRoute: typeof marketingSyaratRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(platform)/platform': {
@@ -313,6 +373,9 @@ const rootRouteChildren: RootRouteChildren = {
   LupaSandiRoute: LupaSandiRoute,
   marketingDaftarRoute: marketingDaftarRoute,
   marketingHargaRoute: marketingHargaRoute,
+  marketingKontakRoute: marketingKontakRoute,
+  marketingPrivasiRoute: marketingPrivasiRoute,
+  marketingSyaratRoute: marketingSyaratRoute,
   platformPlatformRoute: platformPlatformRouteWithChildren,
   schoolBerandaRoute: schoolBerandaRoute,
   ApiTenantRoute: ApiTenantRoute,

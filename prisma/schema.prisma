@@ -266,3 +266,17 @@ model RateLimit {
   @@index([resetAt])
   @@map("rate_limits")
 }
+
+/// Pesan dari form kontak/demo di landing (LP-05). Data global, bukan milik sekolah.
+model ContactRequest {
+  id         String  @id @default(uuid(7)) @db.Uuid
+  name       String  @db.VarChar(100)
+  email      String  @db.VarChar(254)
+  schoolName String? @map("school_name") @db.VarChar(150)
+  message    String  @db.VarChar(2000)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([createdAt])
+  @@map("contact_requests")
+}
