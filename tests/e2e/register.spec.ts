@@ -51,7 +51,12 @@ test("sekolah baru terdaftar lalu admin bisa login di subdomainnya", async ({ pa
   await page.getByLabel("Kata sandi").fill(password)
   await page.getByRole("button", { name: "Masuk" }).click()
 
-  await expect(page).not.toHaveURL(/\/login/)
+  await expect(page).toHaveURL(
+    new RegExp(`${slug}\\.localhost:3000/beranda$`)
+  )
+  await expect(
+    page.getByRole("heading", { name: "SMA Uji Pendaftaran" })
+  ).toBeVisible()
 })
 
 test("subdomain yang sudah dipakai ditolak dan tombol daftar nonaktif", async ({ page }) => {

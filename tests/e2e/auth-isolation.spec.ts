@@ -19,7 +19,8 @@ async function login(page: Page, origin: string, email: string, password: string
 test("anggota sekolah berhasil login di subdomain sekolahnya", async ({ page }) => {
   await login(page, MAN3, ADMIN_MAN3, PASSWORD)
 
-  await expect(page).not.toHaveURL(/\/login/)
+  await expect(page).toHaveURL(/man3pku\.localhost:3000\/beranda$/)
+  await expect(page.getByRole("heading", { name: "MAN 3 Pekanbaru" })).toBeVisible()
 })
 
 test("sandi salah menampilkan pesan error", async ({ page }) => {
@@ -40,7 +41,8 @@ test("akun sekolah lain ditolak di subdomain yang bukan miliknya", async ({ page
 
 test("sesi di satu subdomain tidak terbawa ke subdomain lain", async ({ page }) => {
   await login(page, MAN3, ADMIN_MAN3, PASSWORD)
-  await expect(page).not.toHaveURL(/\/login/)
+  await expect(page).toHaveURL(/man3pku\.localhost:3000\/beranda$/)
+  await expect(page.getByRole("heading", { name: "MAN 3 Pekanbaru" })).toBeVisible()
 
   // Subdomain lain tidak punya cookie sesi: form login tetap tampil.
   await page.goto(`${DEMO}/login`)
@@ -49,4 +51,21 @@ test("sesi di satu subdomain tidak terbawa ke subdomain lain", async ({ page }) 
 
   const cookies = await page.context().cookies(DEMO)
   expect(cookies.filter((c) => c.name.includes("session_token"))).toHaveLength(0)
+})
+
+test("admin sekolah yang sudah login membuka / lalu mendarat di beranda (tanpa loop)", async ({ page }) => {
+  await login(page, MAN3, ADMIN_MAN3, PASSWORD)
+  await expect(page).toHaveURL(/\/beranda$/)
+
+  await page.goto(`${MAN3}/`)
+  await expect(page).toHaveURL(/\/beranda$/)
+
+  // Keluar mengembalikan ke login, dan beranda tidak bisa dibuka lagi.
+  // Klik sebelum hydrate tidak berefek; ulangi sampai handler terpasang.
+  await expect(async () => {
+    await page.getByRole("button", { name: "Keluar" }).click()
+    await expect(page).toHaveURL(/\/login$/, { timeout: 1500 })
+  }).toPass({ timeout: 15_000 })
+  await page.goto(`${MAN3}/beranda`)
+  await expect(page).toHaveURL(/\/login$/)
 })
