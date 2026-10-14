@@ -66,6 +66,14 @@ enum SubscriptionStatus {
   @@map("subscription_status")
 }
 
+enum SubjectGroup {
+  umum
+  produktif
+  muatan_lokal
+
+  @@map("subject_group")
+}
+
 enum MembershipStatus {
   active
   inactive
@@ -87,6 +95,11 @@ model School {
 
   memberships   Membership[]
   subscriptions Subscription[]
+  academicYears AcademicYear[]
+  semesters     Semester[]
+  majors        Major[]
+  classrooms    Classroom[]
+  subjects      Subject[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -279,4 +292,106 @@ model ContactRequest {
 
   @@index([createdAt])
   @@map("contact_requests")
+}
+
+/// Data master akademik (F2, OB-01). Semua model tenant: wajib lewat tenantDb().
+/// Tahun ajaran, mis. "2026/2027". Hanya satu yang aktif per sekolah (indeks parsial di migrasi).
+model AcademicYear {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  schoolId  String   @map("school_id") @db.Uuid
+  name      String   @db.VarChar(32)
+  startDate DateTime @map("start_date") @db.Date
+  endDate   DateTime @map("end_date") @db.Date
+  isActive  Boolean  @default(false) @map("is_active")
+
+  school    School     @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  semesters Semester[]
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([schoolId, name])
+  @@index([schoolId, isActive])
+  @@map("academic_years")
+}
+
+/// Semester ("Ganjil"/"Genap") milik satu tahun ajaran. Hanya satu yang aktif per sekolah.
+model Semester {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  schoolId       String   @map("school_id") @db.Uuid
+  academicYearId String   @map("academic_year_id") @db.Uuid
+  name           String   @db.VarChar(32)
+  startDate      DateTime @map("start_date") @db.Date
+  endDate        DateTime @map("end_date") @db.Date
+  isActive       Boolean  @default(false) @map("is_active")
+
+  school       School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
+  classrooms   Classroom[]
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([schoolId, academicYearId, name])
+  @@index([schoolId, isActive])
+  @@index([schoolId, academicYearId])
+  @@map("semesters")
+}
+
+/// Kompetensi keahlian (khusus SMK).
+model Major {
+  id       String @id @default(uuid(7)) @db.Uuid
+  schoolId String @map("school_id") @db.Uuid
+  code     String @db.VarChar(16)
+  name     String @db.VarChar(120)
+
+  school     School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classrooms Classroom[]
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([schoolId, code])
+  @@map("majors")
+}
+
+/// Rombel (rombongan belajar) per semester. Wali kelas ditambahkan di OB-03.
+model Classroom {
+  id         String  @id @default(uuid(7)) @db.Uuid
+  schoolId   String  @map("school_id") @db.Uuid
+  semesterId String  @map("semester_id") @db.Uuid
+  grade      Int     @db.SmallInt
+  majorId    String? @map("major_id") @db.Uuid
+  name       String  @db.VarChar(64)
+
+  school   School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  semester Semester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  major    Major?   @relation(fields: [majorId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([schoolId, semesterId])
+  @@index([schoolId, majorId])
+  @@map("classrooms")
+}
+
+/// Mata pelajaran.
+model Subject {
+  id       String       @id @default(uuid(7)) @db.Uuid
+  schoolId String       @map("school_id") @db.Uuid
+  code     String       @db.VarChar(16)
+  name     String       @db.VarChar(120)
+  group    SubjectGroup @default(umum)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([schoolId, code])
+  @@map("subjects")
 }
