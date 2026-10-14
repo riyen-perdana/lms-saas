@@ -1,7 +1,9 @@
 // Skema Prisma — EduSaaS
 // ---------------------------------------------------------------------------
-// Fase F0 baru berisi model GLOBAL (tanpa school_id): schools, plans, users.
-// Model tenant dan policy RLS menyusul di F0 bagian 2 (tenantDb).
+// Fase F0 bagian 1: model GLOBAL (tanpa school_id): schools, plans, users.
+// Fase F0 bagian 2: model tenant PERTAMA (memberships) sebagai bukti mekanisme
+// isolasi. Model tenant berikutnya menyusul bersama modulnya, masing-masing
+// wajib punya field schoolId, @@index diawali schoolId, dan policy RLS.
 //
 // Konvensi (PRD §7):
 //   - Primary key UUID v7, kolom timestamptz (waktu disimpan UTC)
@@ -46,6 +48,23 @@ enum SchoolStatus {
   @@map("school_status")
 }
 
+enum MembershipRole {
+  school_admin
+  teacher
+  student
+  parent
+
+  @@map("membership_role")
+}
+
+enum MembershipStatus {
+  active
+  inactive
+  pending
+
+  @@map("membership_status")
+}
+
 /// Tenant utama. Diidentifikasi lewat subdomain -> schools.slug.
 model School {
   id       String       @id @default(uuid(7)) @db.Uuid
@@ -56,6 +75,8 @@ model School {
   status   SchoolStatus @default(trial)
   logoUrl  String?      @map("logo_url") @db.VarChar(500)
   timezone String       @default("Asia/Jakarta") @db.VarChar(64)
+
+  memberships Membership[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -84,16 +105,102 @@ model Plan {
 }
 
 /// Identitas global (bukan milik satu sekolah). Relasi ke sekolah lewat `memberships`.
+/// Dipakai Better Auth sebagai model `user` (kolom `email_verified`, `image`).
 model User {
   id            String  @id @default(uuid(7)) @db.Uuid
   email         String  @unique @db.VarChar(320)
   name          String  @db.VarChar(191)
-  passwordHash  String  @map("password_hash") @db.VarChar(255)
+  image         String? @db.VarChar(500)
   emailVerified Boolean @default(false) @map("email_verified")
+
+  accounts   Account[]
+  sessions   Session[]
+  memberships Membership[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   @@map("users")
+}
+
+/// Sesi login Better Auth. Cookie-nya host-only, jadi sesi di
+/// `sekolah-a.edusaas.id` tidak berlaku di `sekolah-b.edusaas.id`.
+model Session {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  token     String   @unique @db.VarChar(255)
+  expiresAt DateTime @map("expires_at") @db.Timestamptz(6)
+  ipAddress String?  @map("ip_address") @db.VarChar(64)
+  userAgent String?  @map("user_agent") @db.VarChar(500)
+  userId    String   @map("user_id") @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+/// Kredensial dan akun pihak ketiga milik Better Auth.
+/// Untuk email + password, `provider_id` = "credential" dan `password` berisi hash.
+model Account {
+  id                    String    @id @default(uuid(7)) @db.Uuid
+  accountId             String    @map("account_id") @db.VarChar(191)
+  providerId            String    @map("provider_id") @db.VarChar(191)
+  userId                String    @map("user_id") @db.Uuid
+  accessToken           String?   @map("access_token") @db.Text
+  refreshToken          String?   @map("refresh_token") @db.Text
+  idToken               String?   @map("id_token") @db.Text
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at") @db.Timestamptz(6)
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at") @db.Timestamptz(6)
+  scope                 String?   @db.Text
+  password              String?   @db.VarChar(255)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+/// Token verifikasi email / lupa sandi milik Better Auth.
+model Verification {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  identifier String   @db.VarChar(320)
+  value      String   @db.Text
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(6)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+/// Model tenant pertama (F0). Satu user bisa punya peran berbeda di sekolah berbeda.
+/// Wajib diakses lewat `tenantDb(schoolId)` — lihat src/db/tenant.ts.
+model Membership {
+  id       String           @id @default(uuid(7)) @db.Uuid
+  schoolId String           @map("school_id") @db.Uuid
+  userId   String           @map("user_id") @db.Uuid
+  role     MembershipRole
+  status   MembershipStatus @default(active)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@unique([schoolId, userId])
+  @@index([schoolId, role])
+  @@index([schoolId, userId])
+  @@map("memberships")
 }
