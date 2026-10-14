@@ -1,6 +1,6 @@
 # Progres Pengerjaan EduSaaS
 
-Terakhir diperbarui: 2026-10-14 · commit `88d6c26`
+Terakhir diperbarui: 2026-10-14 · commit `6fe3dc5`
 Pemeriksaan: typecheck, lint, 116 test unit, 60 E2E (Playwright), dan `pnpm build` hijau.
 
 ## Status per fase (PRD §10)
@@ -25,7 +25,7 @@ Pemeriksaan: typecheck, lint, 116 test unit, 60 E2E (Playwright), dan `pnpm buil
 2. ~~LP-03~~ selesai: `/harga` + beranda membaca `plans` (Standar, Pro, kartu Enterprise statis). Harga seed masih sementara (final di F7)
 3. ~~LP-05~~ selesai: `/kontak` (simpan ke `contact_requests`, notifikasi ke env `CONTACT_EMAIL`), `/privasi`, `/syarat` (draf, perlu tinjauan hukum). Belum ada UI baca pesan kontak di Super Admin
 4. ~~LP-06~~ selesai: `seoMeta`, `/sitemap.xml`, `/robots.txt` (sekolah/platform tidak diindeks), noindex di login. Lighthouse ≥ 90 belum diukur; og:image/canonical belum ada
-5. LP-02 fitur detail
+5. LP-02 fitur detail (usulan: satu halaman `/fitur` dengan 3 bagian Kelas/CBT/Laporan Orang Tua; fitur yang belum ada diberi label "Segera hadir"; teks diambil dari PRD). **Belum dimulai**
 
 Berikutnya F2: OB-01..05, US-01..04 (impor Excel, wizard tahun ajaran, log audit).
 
