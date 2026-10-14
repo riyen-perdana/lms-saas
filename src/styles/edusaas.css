@@ -1,0 +1,109 @@
+/*
+ * EduSaaS — token tambahan di atas CSS hasil shadcn init
+ * -----------------------------------------------------
+ * Warna inti dashboard (background, primary, muted, border, sidebar, chart, radius)
+ * TIDAK ditulis di sini: nilainya berasal dari file CSS yang dibuat oleh
+ *   npx shadcn@latest init --preset b1GKyb59c --template start
+ * (preset base-lyra, neutral, tema orange, font Inter). Jangan ubah nilai di file itu
+ * secara manual; pakai CLI shadcn bila ingin mengganti preset.
+ *
+ * File ini hanya menambahkan yang tidak ada di preset:
+ *   - font mono (NIS, token ujian, kode undangan)
+ *   - surface-subtle dan warna status (warning/success/danger)
+ *   - skala tipografi landing (text-mk-*) dan dashboard (text-ds-*)
+ */
+
+@import "@fontsource-variable/jetbrains-mono";
+
+@theme inline {
+  --font-mono: "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --color-surface-subtle: var(--surface-subtle);
+
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-text: var(--status-warning-text);
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-border: var(--status-warning-border);
+  --color-status-success: var(--status-success);
+  --color-status-success-text: var(--status-success-text);
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-danger: var(--status-danger);
+  --color-status-danger-text: var(--status-danger-text);
+  --color-status-danger-bg: var(--status-danger-bg);
+  --color-status-danger-border: var(--status-danger-border);
+}
+
+@theme {
+  /* ── Tipografi LANDING (text-mk-*) ── */
+  --text-mk-display: clamp(2.375rem, 5.6vw, 4.25rem);
+  --text-mk-display--line-height: 1.04;
+  --text-mk-display--letter-spacing: -0.04em;
+  --text-mk-display--font-weight: 600;
+  --text-mk-h2: clamp(1.875rem, 3.6vw, 2.75rem);
+  --text-mk-h2--line-height: 1.1;
+  --text-mk-h2--letter-spacing: -0.035em;
+  --text-mk-h2--font-weight: 600;
+  --text-mk-lead: 1.125rem;
+  --text-mk-lead--line-height: 1.6;
+  --text-mk-body: 0.9375rem;
+  --text-mk-body--line-height: 1.6;
+  --text-mk-eyebrow: 0.8125rem;
+  --text-mk-eyebrow--line-height: 1.4;
+  --text-mk-eyebrow--font-weight: 500;
+
+  /* ── Tipografi DASHBOARD (text-ds-*) ── */
+  --text-ds-page-title: 1.375rem;
+  --text-ds-page-title--line-height: 1.75rem;
+  --text-ds-page-title--letter-spacing: -0.025em;
+  --text-ds-page-title--font-weight: 600;
+  --text-ds-body: 0.875rem;
+  --text-ds-body--line-height: 1.25rem;
+  --text-ds-table: 0.8125rem;
+  --text-ds-table--line-height: 1.125rem;
+  --text-ds-meta: 0.75rem;
+  --text-ds-meta--line-height: 1rem;
+  --text-ds-caption: 0.6875rem;
+  --text-ds-caption--line-height: 1rem;
+
+  --container-mk: 75rem; /* 1200px, lebar konten landing */
+}
+
+/* Nilai default = dashboard (terang) */
+:root {
+  --surface-subtle: oklch(0.985 0 0);
+
+  --status-warning: oklch(0.769 0.188 70.08);          /* amber-500  dot */
+  --status-warning-text: oklch(0.555 0.163 48.998);    /* amber-700 */
+  --status-warning-bg: oklch(0.987 0.022 95.277);      /* amber-50 */
+  --status-warning-border: oklch(0.924 0.12 95.746);   /* amber-200 */
+  --status-success: oklch(0.696 0.17 162.48);          /* emerald-500 */
+  --status-success-text: oklch(0.508 0.118 165.612);   /* emerald-700 */
+  --status-success-bg: oklch(0.979 0.021 166.113);     /* emerald-50 */
+  --status-success-border: oklch(0.905 0.093 164.15);  /* emerald-200 */
+  --status-danger: oklch(0.637 0.237 25.331);          /* red-500 */
+  --status-danger-text: oklch(0.505 0.213 27.518);     /* red-700 */
+  --status-danger-bg: oklch(0.971 0.013 17.38);        /* red-50 */
+  --status-danger-border: oklch(0.885 0.062 18.334);   /* red-200 */
+}
+
+/* Dashboard gelap */
+.dark {
+  --surface-subtle: oklch(0.175 0 0);
+
+  --status-warning-text: oklch(0.828 0.189 84.429);
+  --status-warning-bg: oklch(0.279 0.077 45.635 / 40%);
+  --status-warning-border: oklch(0.414 0.112 45.904);
+  --status-success-text: oklch(0.765 0.177 163.223);
+  --status-success-bg: oklch(0.262 0.051 172.552 / 40%);
+  --status-success-border: oklch(0.378 0.077 168.94);
+  --status-danger-text: oklch(0.704 0.191 22.216);
+  --status-danger-bg: oklch(0.258 0.092 26.042 / 40%);
+  --status-danger-border: oklch(0.396 0.141 25.723);
+}
+
+@layer base {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}

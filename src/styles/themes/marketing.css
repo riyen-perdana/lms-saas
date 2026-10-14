@@ -1,0 +1,56 @@
+/*
+ * Tema MARKETING — landing page, harga, daftar sekolah (route group (marketing))
+ * -----------------------------------------------------------------------------
+ * Menimpa token preset shadcn (yang dipakai dashboard) hanya saat
+ * <html data-theme="marketing">. Sumber: mockup Opsi A. Monokrom, terang saja.
+ *
+ * Selektor :root[data-theme="marketing"] (spesifisitas 0,2,0) sengaja dipakai agar
+ * menang atas :root dan .dark dari file CSS shadcn, apa pun urutan impornya.
+ *
+ * Mengganti warna brand landing: ubah --primary / --primary-foreground di sini saja.
+ */
+
+:root[data-theme="marketing"] {
+  --radius: 0.5rem;                          /* 8px (preset dashboard: 10px) */
+
+  --background: oklch(1 0 0);                /* #ffffff */
+  --foreground: oklch(0.145 0 0);            /* #0a0a0a */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+
+  --primary: oklch(0.205 0 0);               /* #171717  CTA utama (dashboard: oranye preset) */
+  --primary-foreground: oklch(0.985 0 0);    /* #fafafa */
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+
+  --muted: oklch(0.97 0 0);                  /* #f5f5f5 */
+  --muted-foreground: oklch(0.51 0 0);       /* #666666  ≥4.5:1 di atas #f5f5f5 */
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.922 0 0);                /* #e5e5e5 */
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+
+  --surface-subtle: oklch(0.985 0 0);        /* #fafafa  pita section */
+
+  --chart-1: oklch(0.87 0 0);
+  --chart-2: oklch(0.556 0 0);
+  --chart-3: oklch(0.439 0 0);
+  --chart-4: oklch(0.371 0 0);
+  --chart-5: oklch(0.269 0 0);
+
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  color-scheme: light;
+}
