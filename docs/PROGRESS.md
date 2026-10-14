@@ -8,7 +8,7 @@ Pemeriksaan: typecheck, lint, 116 test unit, 60 E2E (Playwright), dan `pnpm buil
 | Fase | Status |
 | --- | --- |
 | F0 Fondasi | **Selesai** — tenant, RLS, Better Auth, login per subdomain, CI |
-| F1 Landing & registrasi | **Hampir** — sisa di bawah |
+| F1 Landing & registrasi | **Selesai** (utang di bawah) |
 | F2 dst. | Belum dimulai |
 
 ### Sudah jadi di F0–F1
@@ -25,7 +25,7 @@ Pemeriksaan: typecheck, lint, 116 test unit, 60 E2E (Playwright), dan `pnpm buil
 2. ~~LP-03~~ selesai: `/harga` + beranda membaca `plans` (Standar, Pro, kartu Enterprise statis). Harga seed masih sementara (final di F7)
 3. ~~LP-05~~ selesai: `/kontak` (simpan ke `contact_requests`, notifikasi ke env `CONTACT_EMAIL`), `/privasi`, `/syarat` (draf, perlu tinjauan hukum). Belum ada UI baca pesan kontak di Super Admin
 4. ~~LP-06~~ selesai: `seoMeta`, `/sitemap.xml`, `/robots.txt` (sekolah/platform tidak diindeks), noindex di login. Lighthouse ≥ 90 belum diukur; og:image/canonical belum ada
-5. LP-02 fitur detail (usulan: satu halaman `/fitur` dengan 3 bagian Kelas/CBT/Laporan Orang Tua; fitur yang belum ada diberi label "Segera hadir"; teks diambil dari PRD). **Belum dimulai**
+5. ~~LP-02~~ selesai: `/fitur` (Kelas, Ujian CBT, Laporan orang tua) dari `src/features/marketing/features.ts`; semua poin berlabel "Segera hadir", cabut `soon: true` per poin saat fitur rilis
 
 Berikutnya F2: OB-01..05, US-01..04 (impor Excel, wizard tahun ajaran, log audit).
 

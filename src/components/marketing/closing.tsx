@@ -84,8 +84,8 @@ const FOOTER_COLUMNS = [
   {
     title: "Produk",
     links: [
-      { label: "Fitur", href: "#fitur" },
-      { label: "Ujian CBT", href: "#ujian-cbt" },
+      { label: "Fitur", href: "/fitur" },
+      { label: "Ujian CBT", href: "/fitur#cbt" },
       { label: "Harga", href: "/harga" },
     ],
   },

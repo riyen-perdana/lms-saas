@@ -3,7 +3,7 @@
 import { parseHost } from "@/lib/tenant/host"
 
 /** Halaman publik marketing yang masuk sitemap. */
-export const SITEMAP_PATHS = ["/", "/harga", "/daftar", "/kontak", "/privasi", "/syarat"]
+export const SITEMAP_PATHS = ["/", "/fitur", "/harga", "/daftar", "/kontak", "/privasi", "/syarat"]
 
 /** Meta standar halaman publik: title, description, Open Graph, Twitter. */
 export function seoMeta(input: { title: string; description: string }) {

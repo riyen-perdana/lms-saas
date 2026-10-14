@@ -16,6 +16,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as marketingIndexRouteImport } from './routes/(marketing)/index'
 import { Route as marketingDaftarRouteImport } from './routes/(marketing)/daftar'
+import { Route as marketingFiturRouteImport } from './routes/(marketing)/fitur'
 import { Route as marketingHargaRouteImport } from './routes/(marketing)/harga'
 import { Route as marketingKontakRouteImport } from './routes/(marketing)/kontak'
 import { Route as marketingPrivasiRouteImport } from './routes/(marketing)/privasi'
@@ -61,6 +62,11 @@ const marketingIndexRoute = marketingIndexRouteImport.update({
 const marketingDaftarRoute = marketingDaftarRouteImport.update({
   id: '/(marketing)/daftar',
   path: '/daftar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const marketingFiturRoute = marketingFiturRouteImport.update({
+  id: '/(marketing)/fitur',
+  path: '/fitur',
   getParentRoute: () => rootRouteImport,
 } as any)
 const marketingHargaRoute = marketingHargaRouteImport.update({
@@ -128,6 +134,7 @@ export interface FileRoutesByFullPath {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/daftar': typeof marketingDaftarRoute
+  '/fitur': typeof marketingFiturRoute
   '/harga': typeof marketingHargaRoute
   '/kontak': typeof marketingKontakRoute
   '/privasi': typeof marketingPrivasiRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByTo {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/daftar': typeof marketingDaftarRoute
+  '/fitur': typeof marketingFiturRoute
   '/harga': typeof marketingHargaRoute
   '/kontak': typeof marketingKontakRoute
   '/privasi': typeof marketingPrivasiRoute
@@ -168,6 +176,7 @@ export interface FileRoutesById {
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/(marketing)/daftar': typeof marketingDaftarRoute
+  '/(marketing)/fitur': typeof marketingFiturRoute
   '/(marketing)/harga': typeof marketingHargaRoute
   '/(marketing)/kontak': typeof marketingKontakRoute
   '/(marketing)/privasi': typeof marketingPrivasiRoute
@@ -190,6 +199,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/daftar'
+    | '/fitur'
     | '/harga'
     | '/kontak'
     | '/privasi'
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/daftar'
+    | '/fitur'
     | '/harga'
     | '/kontak'
     | '/privasi'
@@ -229,6 +240,7 @@ export interface FileRouteTypes {
     | '/robots.txt'
     | '/sitemap.xml'
     | '/(marketing)/daftar'
+    | '/(marketing)/fitur'
     | '/(marketing)/harga'
     | '/(marketing)/kontak'
     | '/(marketing)/privasi'
@@ -250,6 +262,7 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   marketingDaftarRoute: typeof marketingDaftarRoute
+  marketingFiturRoute: typeof marketingFiturRoute
   marketingHargaRoute: typeof marketingHargaRoute
   marketingKontakRoute: typeof marketingKontakRoute
   marketingPrivasiRoute: typeof marketingPrivasiRoute
@@ -310,6 +323,13 @@ declare module '@tanstack/react-router' {
       path: '/daftar'
       fullPath: '/daftar'
       preLoaderRoute: typeof marketingDaftarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(marketing)/fitur': {
+      id: '/(marketing)/fitur'
+      path: '/fitur'
+      fullPath: '/fitur'
+      preLoaderRoute: typeof marketingFiturRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(marketing)/harga': {
@@ -414,6 +434,7 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   marketingDaftarRoute: marketingDaftarRoute,
+  marketingFiturRoute: marketingFiturRoute,
   marketingHargaRoute: marketingHargaRoute,
   marketingKontakRoute: marketingKontakRoute,
   marketingPrivasiRoute: marketingPrivasiRoute,
