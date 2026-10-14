@@ -9,7 +9,7 @@ const NAV = [
   { href: "#fitur", label: "Fitur" },
   { href: "#untuk-siapa", label: "Untuk siapa" },
   { href: "#ujian-cbt", label: "Ujian CBT" },
-  { href: "#harga", label: "Harga" },
+  { href: "/harga", label: "Harga" },
   { href: "#faq", label: "FAQ" },
 ]
 

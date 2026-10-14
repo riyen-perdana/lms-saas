@@ -18,6 +18,7 @@ import {
 import { Hero } from "@/components/marketing/hero"
 import { Pricing } from "@/components/marketing/pricing"
 import { SiteHeader } from "@/components/marketing/site-header"
+import { getPublicPlans } from "@/features/pricing/server/plans"
 import { getAccess } from "@/features/auth/server/access"
 import { getTenantArea } from "@/lib/tenant/server"
 
@@ -35,6 +36,7 @@ export const Route = createFileRoute("/(marketing)/")({
 
     if (area !== "marketing") throw redirect({ to: "/login" })
   },
+  loader: () => getPublicPlans(),
   head: () => ({
     meta: [
       { title: "EduSaaS — LMS untuk sekolah SD hingga SMK" },
@@ -49,6 +51,8 @@ export const Route = createFileRoute("/(marketing)/")({
 })
 
 function LandingPage() {
+  const plans = Route.useLoaderData()
+
   return (
     <div className="bg-background text-foreground">
       <a
@@ -65,7 +69,7 @@ function LandingPage() {
         <Roles />
         <CbtSection />
         <Testimonial />
-        <Pricing />
+        <Pricing plans={plans} />
         <Faq />
         <FinalCta />
       </main>
