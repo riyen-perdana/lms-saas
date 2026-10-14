@@ -32,6 +32,7 @@ export default defineConfig({
     command: "pnpm dev",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
+    env: { REGISTER_RATE_LIMIT: "1000" },
     timeout: 120_000,
   },
 })

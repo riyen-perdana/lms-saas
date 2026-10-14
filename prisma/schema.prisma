@@ -255,3 +255,14 @@ model Subscription {
   @@index([periodEnd])
   @@map("subscriptions")
 }
+
+/// Penghitung pembatasan laju (src/lib/rate-limit.ts). Bukan model tenant:
+/// kunci berisi bucket + alamat klien, jadi tidak ada schoolId dan tidak ada RLS.
+model RateLimit {
+  key     String   @id
+  count   Int
+  resetAt DateTime @map("reset_at") @db.Timestamptz(6)
+
+  @@index([resetAt])
+  @@map("rate_limits")
+}

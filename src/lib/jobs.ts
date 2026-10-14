@@ -13,6 +13,7 @@
 
 import { PgBoss } from "pg-boss"
 
+import { purgeExpiredRateLimits } from "@/lib/rate-limit"
 import { expireSubscriptions } from "@/features/subscription/expiry"
 import { sendEmail, type EmailMessage } from "@/lib/email"
 
@@ -52,6 +53,7 @@ async function startBoss(): Promise<PgBoss> {
   await boss.work(QUEUES.expireSubscriptions, async () => {
     const result = await expireSubscriptions()
     console.info("[jobs] kedaluwarsa langganan:", result)
+    await purgeExpiredRateLimits()
   })
   await boss.schedule(QUEUES.expireSubscriptions, EXPIRE_CRON)
 

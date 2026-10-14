@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
 Terakhir diperbarui: 2026-10-14 · commit `88d6c26`
-Pemeriksaan: typecheck, lint, 96 test unit, 48 E2E (Playwright), dan `pnpm build` hijau.
+Pemeriksaan: typecheck, lint, 103 test unit, 48 E2E (Playwright), dan `pnpm build` hijau.
 
 ## Status per fase (PRD §10)
 
@@ -21,7 +21,7 @@ Pemeriksaan: typecheck, lint, 96 test unit, 48 E2E (Playwright), dan `pnpm build
 - Job kedaluwarsa langganan tiap 30 menit
 
 ### Sisa F1 (urutan disarankan)
-1. Perlindungan `/daftar` (rate limit atau captcha) sebelum dibuka ke internet
+1. ~~Perlindungan `/daftar`~~ selesai: rate limit berbasis DB (`src/lib/rate-limit.ts`, 5 daftar/IP/jam; env `REGISTER_RATE_LIMIT` untuk dev/E2E). Captcha belum; di produksi pastikan proxy mengisi `x-forwarded-for`
 2. LP-03 halaman harga dari tabel `plans` (samakan nama paket landing vs seed)
 3. LP-02 fitur detail · LP-05 kontak, privasi, syarat (`/kontak` kini 404) · LP-06 SEO dan sitemap
 

@@ -172,6 +172,8 @@ function RegisterPage() {
         setErrors({ slug: result.message })
       } else if (result.code === "NPSN_TAKEN") {
         setErrors({ npsn: result.message })
+      } else if (result.code === "RATE_LIMITED") {
+        setFormError(result.message)
       } else {
         setErrors({ adminEmail: result.message })
       }
