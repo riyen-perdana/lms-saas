@@ -5,3 +5,6 @@ allowBuilds:
   lightningcss: true
   unrs-resolver: true
   msw: false
+  prisma: true
+  "@prisma/engines": true
+  "@prisma/get-platform": true

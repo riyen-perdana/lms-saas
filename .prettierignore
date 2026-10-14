@@ -1,3 +1,9 @@
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+
+src/generated
+prisma/migrations
+
+# Dihasilkan TanStack Router CLI; jangan diformat ulang (header file diminta)
+src/routeTree.gen.ts

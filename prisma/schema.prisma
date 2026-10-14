@@ -1,0 +1,99 @@
+// Skema Prisma — EduSaaS
+// ---------------------------------------------------------------------------
+// Fase F0 baru berisi model GLOBAL (tanpa school_id): schools, plans, users.
+// Model tenant dan policy RLS menyusul di F0 bagian 2 (tenantDb).
+//
+// Konvensi (PRD §7):
+//   - Primary key UUID v7, kolom timestamptz (waktu disimpan UTC)
+//   - Nama model PascalCase -> tabel snake_case lewat @@map
+//   - Kolom snake_case lewat @map
+//   - Semua tabel punya created_at / updated_at / deleted_at
+//
+// Prisma 7: `url` TIDAK ditulis di sini, tapi di prisma.config.ts.
+//
+// Catatan UUID v7: `@default(uuid(7))` digerakkan oleh Prisma Client, bukan oleh
+// database. Kolom `id` karena itu tidak punya DEFAULT di SQL — setiap INSERT
+// harus lewat Prisma Client (atau SQL yang menyediakan id sendiri).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum SchoolLevel {
+  SD
+  SMP
+  SMA
+  SMK
+  MI
+  MTS
+  MA
+
+  @@map("school_level")
+}
+
+enum SchoolStatus {
+  trial
+  active
+  grace
+  readonly
+  suspended
+
+  @@map("school_status")
+}
+
+/// Tenant utama. Diidentifikasi lewat subdomain -> schools.slug.
+model School {
+  id       String       @id @default(uuid(7)) @db.Uuid
+  slug     String       @unique @db.VarChar(63)
+  npsn     String?      @unique @db.VarChar(16)
+  name     String       @db.VarChar(191)
+  level    SchoolLevel
+  status   SchoolStatus @default(trial)
+  logoUrl  String?      @map("logo_url") @db.VarChar(500)
+  timezone String       @default("Asia/Jakarta") @db.VarChar(64)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([status])
+  @@map("schools")
+}
+
+/// Paket langganan. Semula diaktifkan manual oleh Super Admin (AGENTS.md aturan 10).
+model Plan {
+  id            String @id @default(uuid(7)) @db.Uuid
+  code          String @unique @db.VarChar(32)
+  name          String @db.VarChar(100)
+  priceSemester Int    @map("price_semester")
+  priceYear     Int    @map("price_year")
+  maxStudents   Int    @map("max_students")
+  maxStorageGb  Int    @map("max_storage_gb")
+  features      Json   @default("{}") @db.JsonB
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@map("plans")
+}
+
+/// Identitas global (bukan milik satu sekolah). Relasi ke sekolah lewat `memberships`.
+model User {
+  id            String  @id @default(uuid(7)) @db.Uuid
+  email         String  @unique @db.VarChar(320)
+  name          String  @db.VarChar(191)
+  passwordHash  String  @map("password_hash") @db.VarChar(255)
+  emailVerified Boolean @default(false) @map("email_verified")
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@map("users")
+}

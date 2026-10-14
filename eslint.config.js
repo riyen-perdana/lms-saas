@@ -16,6 +16,17 @@ export default [
     },
   },
   {
-    ignores: ["eslint.config.js", ".prettierrc"],
+    ignores: [
+      "eslint.config.js",
+      ".prettierrc",
+      // Prisma Client hasil `prisma generate`
+      "src/generated/**",
+      // SQL hasil migrasi
+      "prisma/migrations/**",
+      // Dihasilkan TanStack Router CLI
+      "src/routeTree.gen.ts",
+      "test-results/**",
+      "playwright-report/**",
+    ],
   },
 ]

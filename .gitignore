@@ -4,6 +4,7 @@ dist
 dist-ssr
 *.local
 .env*
+!.env.example
 .nitro
 .tanstack
 .wrangler
@@ -14,3 +15,13 @@ todos.json
 
 # typescript
 *.tsbuildinfo
+
+# prisma
+src/generated
+
+# test
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+/coverage
