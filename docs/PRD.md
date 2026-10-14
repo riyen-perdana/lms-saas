@@ -94,7 +94,7 @@ Aplikasi dibangun sebagai satu monolit TanStack Start dengan satu database Postg
 | Validasi | Zod | Satu skema untuk form, server function, dan env |
 | UI | Tailwind CSS v4 + shadcn/ui preset `b1GKyb59c` (style base-lyra, Base UI, Inter), landing ditimpa tema monokrom (§5.4) | Komponen konsisten, mudah dihasilkan agen AI; warna landing dan dashboard bisa diganti terpisah |
 | Form | TanStack Form atau React Hook Form + Zod | Validasi terpadu |
-| Penyimpanan file | S3-compatible (Cloudflare R2 / MinIO) dengan presigned URL | Materi & tugas tidak membebani server |
+| Penyimpanan file | Adapter storage: driver `local` (folder di server, dipakai sekarang) dan driver S3-compatible (Cloudflare R2 / MinIO, menyusul) dengan presigned URL | Kode aplikasi hanya bergantung pada adapter, jadi pindah ke S3 cukup ganti driver lewat env tanpa mengubah fitur |
 | Background job | pg-boss (antrian berbasis PostgreSQL) | Email, impor Excel, rekap nilai tanpa Redis |
 | Email | SMTP / Resend | Notifikasi & laporan orang tua |
 | Pembayaran | Xendit atau Midtrans (dibungkus adapter) | QRIS, VA, e-wallet; adapter memudahkan ganti provider |
@@ -120,7 +120,7 @@ Aplikasi dibangun sebagai satu monolit TanStack Start dengan satu database Postg
 
 - PostgreSQL dipasang langsung di Windows; aplikasi jalan dengan `pnpm dev` di `localhost:3000`.
 - Subdomain diuji lewat `*.localhost`, yang otomatis diarahkan browser modern ke 127.0.0.1: `localhost:3000` = landing page, `app.localhost:3000` = Super Admin, `man3pku.localhost:3000` = LMS sekolah contoh.
-- Penyimpanan file memakai folder lokal di balik adapter storage yang sama, sehingga nanti cukup ganti ke S3/R2 lewat env.
+- Penyimpanan file memakai driver `local` (folder `.storage/`, tidak di-commit) di balik adapter storage. Kunci file selalu berawalan `schools/<school_id>/`, dan file dilayani lewat route aplikasi yang memeriksa tenant dan sesi. Pindah ke S3/R2 = menambah driver S3 dan mengganti `STORAGE_DRIVER` di env; skema dan fitur tidak berubah.
 - Email dev dicatat ke console atau ditangkap Mailpit; pg-boss memakai PostgreSQL yang sama, jadi tidak perlu Redis.
 
 ### 5.3 Gambaran komponen
@@ -144,7 +144,8 @@ Aplikasi dibangun sebagai satu monolit TanStack Start dengan satu database Postg
          ▼               ▼                  ▼               ▼
    PostgreSQL       Object storage     Worker pg-boss   Payment gateway
    school_id + RLS  R2/MinIO,          impor Excel,     Xendit/Midtrans,
-                    presigned URL      email, laporan   webhook ke billing
+                    (tahap awal:       email, laporan   webhook ke billing
+                    folder lokal)
 ```
 
 Semua subdomain masuk ke satu aplikasi; setiap request melewati resolusi tenant, lalu service layer dan RLS PostgreSQL memastikan data hanya terbaca oleh sekolah pemiliknya.
@@ -290,7 +291,7 @@ Setiap kebutuhan diberi kode (mis. `LP-01`) agar bisa dirujuk langsung saat memb
 - **KL-04** Siswa mengumpulkan, bisa mengganti sebelum tenggat; status: belum, dikumpulkan, terlambat, dinilai, dikembalikan untuk revisi.
 - **KL-05** Guru menilai di satu layar (daftar siswa + pratinjau file), memberi nilai & komentar, dukungan rubrik sederhana.
 - **KL-06** Notifikasi dalam aplikasi + email: tugas baru, tenggat H-1, tugas dinilai.
-- **KL-07** Batas ukuran file mengikuti paket; unggah langsung ke storage via presigned URL.
+- **KL-07** Batas ukuran file mengikuti paket. Tahap awal: unggah lewat server ke driver `local`. Setelah driver S3 ada: unggah langsung ke storage via presigned URL.
 
 ### 6.5 Bank soal & CBT
 

@@ -28,3 +28,6 @@ src/generated
 
 # Hasil driver email "console" (email yang dicetak/simpan saat development)
 /.email-outbox
+
+# File unggahan driver storage "local" (development)
+/.storage
