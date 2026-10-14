@@ -4,18 +4,16 @@
 import { createFileRoute } from "@tanstack/react-router"
 
 import { LegalPage, LegalSection } from "@/components/marketing/legal-page"
+import { seoMeta } from "@/lib/seo"
 
 export const Route = createFileRoute("/(marketing)/syarat")({
   staticData: { theme: "marketing" },
   head: () => ({
-    meta: [
-      { title: "Syarat & ketentuan — EduSaaS" },
-      {
-        name: "description",
-        content:
-          "Ketentuan penggunaan EduSaaS: trial, langganan, tanggung jawab sekolah, dan penangguhan akun.",
-      },
-    ],
+    meta: seoMeta({
+      title: "Syarat & ketentuan — EduSaaS",
+      description:
+        "Ketentuan penggunaan EduSaaS: trial, langganan, tanggung jawab sekolah, dan penangguhan akun.",
+    }),
   }),
   component: TermsPage,
 })

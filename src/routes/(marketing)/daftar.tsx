@@ -20,6 +20,7 @@ import {
   checkSlug,
   registerSchoolFn,
 } from "@/features/registration/server/register"
+import { seoMeta } from "@/lib/seo"
 import { getTenantArea } from "@/lib/tenant/server"
 import { cn } from "@/lib/utils"
 
@@ -31,14 +32,11 @@ export const Route = createFileRoute("/(marketing)/daftar")({
     }
   },
   head: () => ({
-    meta: [
-      { title: "Daftar sekolah — EduSaaS" },
-      {
-        name: "description",
-        content:
-          "Daftarkan sekolah Anda, pilih subdomain, dan mulai trial 30 hari tanpa kartu kredit.",
-      },
-    ],
+    meta: seoMeta({
+      title: "Daftar sekolah — EduSaaS",
+      description:
+        "Daftarkan sekolah Anda, pilih subdomain, dan mulai trial 30 hari tanpa kartu kredit.",
+    }),
   }),
   component: RegisterPage,
 })

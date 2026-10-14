@@ -6,6 +6,7 @@ import { FinalCta, SiteFooter } from "@/components/marketing/closing"
 import { Pricing } from "@/components/marketing/pricing"
 import { SiteHeader } from "@/components/marketing/site-header"
 import { getPublicPlans } from "@/features/pricing/server/plans"
+import { seoMeta } from "@/lib/seo"
 import { getTenantArea } from "@/lib/tenant/server"
 
 export const Route = createFileRoute("/(marketing)/harga")({
@@ -15,14 +16,11 @@ export const Route = createFileRoute("/(marketing)/harga")({
   },
   loader: () => getPublicPlans(),
   head: () => ({
-    meta: [
-      { title: "Harga — EduSaaS" },
-      {
-        name: "description",
-        content:
-          "Paket langganan per sekolah, bukan per guru. Mulai dengan trial 30 hari fitur lengkap.",
-      },
-    ],
+    meta: seoMeta({
+      title: "Harga — EduSaaS",
+      description:
+        "Paket langganan per sekolah, bukan per guru. Mulai dengan trial 30 hari fitur lengkap.",
+    }),
   }),
   component: PricingPage,
 })

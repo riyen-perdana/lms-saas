@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AturUlangSandiRouteImport } from './routes/atur-ulang-sandi'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LupaSandiRouteImport } from './routes/lupa-sandi'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as marketingIndexRouteImport } from './routes/(marketing)/index'
 import { Route as marketingDaftarRouteImport } from './routes/(marketing)/daftar'
 import { Route as marketingHargaRouteImport } from './routes/(marketing)/harga'
@@ -39,6 +41,16 @@ const LoginRoute = LoginRouteImport.update({
 const LupaSandiRoute = LupaSandiRouteImport.update({
   id: '/lupa-sandi',
   path: '/lupa-sandi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const marketingIndexRoute = marketingIndexRouteImport.update({
@@ -113,6 +125,8 @@ export interface FileRoutesByFullPath {
   '/atur-ulang-sandi': typeof AturUlangSandiRoute
   '/login': typeof LoginRoute
   '/lupa-sandi': typeof LupaSandiRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/daftar': typeof marketingDaftarRoute
   '/harga': typeof marketingHargaRoute
   '/kontak': typeof marketingKontakRoute
@@ -131,6 +145,8 @@ export interface FileRoutesByTo {
   '/atur-ulang-sandi': typeof AturUlangSandiRoute
   '/login': typeof LoginRoute
   '/lupa-sandi': typeof LupaSandiRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/daftar': typeof marketingDaftarRoute
   '/harga': typeof marketingHargaRoute
   '/kontak': typeof marketingKontakRoute
@@ -149,6 +165,8 @@ export interface FileRoutesById {
   '/atur-ulang-sandi': typeof AturUlangSandiRoute
   '/login': typeof LoginRoute
   '/lupa-sandi': typeof LupaSandiRoute
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/(marketing)/daftar': typeof marketingDaftarRoute
   '/(marketing)/harga': typeof marketingHargaRoute
   '/(marketing)/kontak': typeof marketingKontakRoute
@@ -169,6 +187,8 @@ export interface FileRouteTypes {
     | '/atur-ulang-sandi'
     | '/login'
     | '/lupa-sandi'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/daftar'
     | '/harga'
     | '/kontak'
@@ -187,6 +207,8 @@ export interface FileRouteTypes {
     | '/atur-ulang-sandi'
     | '/login'
     | '/lupa-sandi'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/daftar'
     | '/harga'
     | '/kontak'
@@ -204,6 +226,8 @@ export interface FileRouteTypes {
     | '/atur-ulang-sandi'
     | '/login'
     | '/lupa-sandi'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/(marketing)/daftar'
     | '/(marketing)/harga'
     | '/(marketing)/kontak'
@@ -223,6 +247,8 @@ export interface RootRouteChildren {
   AturUlangSandiRoute: typeof AturUlangSandiRoute
   LoginRoute: typeof LoginRoute
   LupaSandiRoute: typeof LupaSandiRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   marketingDaftarRoute: typeof marketingDaftarRoute
   marketingHargaRoute: typeof marketingHargaRoute
   marketingKontakRoute: typeof marketingKontakRoute
@@ -256,6 +282,20 @@ declare module '@tanstack/react-router' {
       path: '/lupa-sandi'
       fullPath: '/lupa-sandi'
       preLoaderRoute: typeof LupaSandiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(marketing)/': {
@@ -371,6 +411,8 @@ const rootRouteChildren: RootRouteChildren = {
   AturUlangSandiRoute: AturUlangSandiRoute,
   LoginRoute: LoginRoute,
   LupaSandiRoute: LupaSandiRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   marketingDaftarRoute: marketingDaftarRoute,
   marketingHargaRoute: marketingHargaRoute,
   marketingKontakRoute: marketingKontakRoute,

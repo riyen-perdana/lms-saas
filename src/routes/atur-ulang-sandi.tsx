@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { authClient } from "@/lib/auth-client"
+import { NOINDEX_META } from "@/lib/seo"
 
 const searchSchema = z.object({
   token: z.string().optional().catch(undefined),
@@ -17,7 +18,9 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/atur-ulang-sandi")({
   validateSearch: searchSchema,
-  head: () => ({ meta: [{ title: "Atur ulang kata sandi — EduSaaS" }] }),
+  head: () => ({
+    meta: [{ title: "Atur ulang kata sandi — EduSaaS" }, ...NOINDEX_META],
+  }),
   component: ResetPasswordPage,
 })
 

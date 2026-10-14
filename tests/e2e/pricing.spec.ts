@@ -35,3 +35,33 @@ test("beranda juga memuat harga dari database", async ({ page }) => {
   await page.goto("/")
   await expect(page.locator("#harga").getByText(/Rp\s?750\.000/)).toBeVisible()
 })
+
+test("SEO: sitemap, robots, dan meta Open Graph", async ({ page, request }) => {
+  const sitemap = await request.get("/sitemap.xml")
+  expect(sitemap.headers()["content-type"]).toContain("xml")
+  const xml = await sitemap.text()
+  expect(xml).toContain("/harga</loc>")
+  expect(xml).toContain("/kontak</loc>")
+
+  const robots = await (await request.get("/robots.txt")).text()
+  expect(robots).toContain("Sitemap: http://localhost:3000/sitemap.xml")
+
+  // Subdomain sekolah tidak boleh diindeks.
+  // Node tidak me-resolve *.localhost, jadi host sekolah dikirim lewat header.
+  const headers = { host: "man3pku.localhost:3000" }
+  const school = await request.get("/robots.txt", { headers })
+  expect(await school.text()).toContain("Disallow: /\n")
+  expect((await request.get("/sitemap.xml", { headers })).status()).toBe(404)
+
+  await page.goto("/harga")
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    "content",
+    "Harga — EduSaaS"
+  )
+
+  await page.goto("/login")
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute(
+    "content",
+    "noindex"
+  )
+})

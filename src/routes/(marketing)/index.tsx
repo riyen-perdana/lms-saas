@@ -20,6 +20,7 @@ import { Pricing } from "@/components/marketing/pricing"
 import { SiteHeader } from "@/components/marketing/site-header"
 import { getPublicPlans } from "@/features/pricing/server/plans"
 import { getAccess } from "@/features/auth/server/access"
+import { seoMeta } from "@/lib/seo"
 import { getTenantArea } from "@/lib/tenant/server"
 
 export const Route = createFileRoute("/(marketing)/")({
@@ -38,14 +39,11 @@ export const Route = createFileRoute("/(marketing)/")({
   },
   loader: () => getPublicPlans(),
   head: () => ({
-    meta: [
-      { title: "EduSaaS — LMS untuk sekolah SD hingga SMK" },
-      {
-        name: "description",
-        content:
-          "Kelas, materi, tugas, ujian CBT, dan laporan nilai ke orang tua dalam satu platform di subdomain sekolah Anda. Coba gratis 30 hari.",
-      },
-    ],
+    meta: seoMeta({
+      title: "EduSaaS — LMS untuk sekolah SD hingga SMK",
+      description:
+        "Kelas, materi, tugas, ujian CBT, dan laporan nilai ke orang tua dalam satu platform di subdomain sekolah Anda. Coba gratis 30 hari.",
+    }),
   }),
   component: LandingPage,
 })

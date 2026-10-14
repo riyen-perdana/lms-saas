@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
 Terakhir diperbarui: 2026-10-14 · commit `88d6c26`
-Pemeriksaan: typecheck, lint, 110 test unit, 58 E2E (Playwright), dan `pnpm build` hijau.
+Pemeriksaan: typecheck, lint, 116 test unit, 60 E2E (Playwright), dan `pnpm build` hijau.
 
 ## Status per fase (PRD §10)
 
@@ -24,7 +24,8 @@ Pemeriksaan: typecheck, lint, 110 test unit, 58 E2E (Playwright), dan `pnpm buil
 1. ~~Perlindungan `/daftar`~~ selesai: rate limit berbasis DB (`src/lib/rate-limit.ts`, 5 daftar/IP/jam; env `REGISTER_RATE_LIMIT` untuk dev/E2E). Captcha belum; di produksi pastikan proxy mengisi `x-forwarded-for`
 2. ~~LP-03~~ selesai: `/harga` + beranda membaca `plans` (Standar, Pro, kartu Enterprise statis). Harga seed masih sementara (final di F7)
 3. ~~LP-05~~ selesai: `/kontak` (simpan ke `contact_requests`, notifikasi ke env `CONTACT_EMAIL`), `/privasi`, `/syarat` (draf, perlu tinjauan hukum). Belum ada UI baca pesan kontak di Super Admin
-4. LP-02 fitur detail · LP-06 SEO dan sitemap
+4. ~~LP-06~~ selesai: `seoMeta`, `/sitemap.xml`, `/robots.txt` (sekolah/platform tidak diindeks), noindex di login. Lighthouse ≥ 90 belum diukur; og:image/canonical belum ada
+5. LP-02 fitur detail
 
 Berikutnya F2: OB-01..05, US-01..04 (impor Excel, wizard tahun ajaran, log audit).
 

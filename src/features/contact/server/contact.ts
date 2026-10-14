@@ -13,7 +13,12 @@ import {
   consumeRateLimit,
 } from "@/lib/rate-limit"
 
-const CONTACT_LIMIT = { bucket: "contact", limit: 5, windowSeconds: 3600 }
+// CONTACT_RATE_LIMIT hanya untuk dev/E2E.
+const CONTACT_LIMIT = {
+  bucket: "contact",
+  limit: Number(process.env.CONTACT_RATE_LIMIT) || 5,
+  windowSeconds: 3600,
+}
 
 export type ContactResult =
   | { ok: true }

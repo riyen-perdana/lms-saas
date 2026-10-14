@@ -16,8 +16,12 @@ import { loginSchema } from "@/features/auth/schema"
 import { SUSPENDED_MESSAGE } from "@/features/auth/policy"
 import { getAccess } from "@/features/auth/server/access"
 import { signIn, signOut } from "@/lib/auth-client"
+import { NOINDEX_META } from "@/lib/seo"
 
 export const Route = createFileRoute("/login")({
+  head: () => ({
+    meta: [{ title: "Masuk — EduSaaS" }, ...NOINDEX_META],
+  }),
   loader: async () => {
     const context = await getAccess()
 

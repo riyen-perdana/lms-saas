@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { contactSchema } from "@/features/contact/schema"
 import { sendContactFn } from "@/features/contact/server/contact"
+import { seoMeta } from "@/lib/seo"
 import { getTenantArea } from "@/lib/tenant/server"
 
 export const Route = createFileRoute("/(marketing)/kontak")({
@@ -19,14 +20,11 @@ export const Route = createFileRoute("/(marketing)/kontak")({
     if ((await getTenantArea()) !== "marketing") throw redirect({ to: "/login" })
   },
   head: () => ({
-    meta: [
-      { title: "Kontak & demo — EduSaaS" },
-      {
-        name: "description",
-        content:
-          "Hubungi tim EduSaaS untuk jadwal demo, paket Enterprise, atau pertanyaan seputar penerapan di sekolah Anda.",
-      },
-    ],
+    meta: seoMeta({
+      title: "Kontak & demo — EduSaaS",
+      description:
+        "Hubungi tim EduSaaS untuk jadwal demo, paket Enterprise, atau pertanyaan seputar penerapan di sekolah Anda.",
+    }),
   }),
   component: ContactPage,
 })
