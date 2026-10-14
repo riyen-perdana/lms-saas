@@ -3,14 +3,18 @@
 // Isi: paket langganan, 2 sekolah tenant, dan user admin. Jalankan dengan
 // `pnpm db:seed`. Idempoten (upsert pada kunci unik), jadi aman diulang.
 //
-// PENTING: user di sini dibuat TANPA kredensial. Hash sandi disimpan Better Auth
-// di tabel `accounts`, jadi sandi awal harus dibuat lewat alur Better Auth
-// (mis. daftar / atur ulang sandi), bukan lewat seed.
+// Sandi dev: admin tiap sekolah dibuat dengan kredensial (hash Better Auth di
+// `accounts`) dan keanggotaan `school_admin`, supaya login lokal bisa dicoba.
+// Seed MENOLAK berjalan dengan sandi bawaan di produksi. Super Admin platform
+// belum punya model peran (F1), jadi dibuat tanpa kredensial.
 
 import "dotenv/config"
 import { PrismaPg } from "@prisma/adapter-pg"
+import { hashPassword } from "better-auth/crypto"
 
 import { PrismaClient } from "../src/generated/prisma/client.js"
+
+const DEV_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "ubah-sandi-ini-123"
 
 const PLANS = [
   {
@@ -93,6 +97,10 @@ async function main() {
     )
   }
 
+  if (process.env.NODE_ENV === "production" && !process.env.SEED_ADMIN_PASSWORD) {
+    throw new Error("Di produksi SEED_ADMIN_PASSWORD wajib diisi.")
+  }
+
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
   const prisma = new PrismaClient({ adapter })
 
@@ -133,7 +141,10 @@ async function main() {
       })
       console.log(`  sekolah ${school.slug} siap`)
 
-      await prisma.user.upsert({
+      const schoolRow = await prisma.school.findUniqueOrThrow({
+        where: { slug: school.slug },
+      })
+      const admin = await prisma.user.upsert({
         where: { email: school.admin.email },
         create: {
           email: school.admin.email,
@@ -141,6 +152,31 @@ async function main() {
           emailVerified: true,
         },
         update: { name: school.admin.name, emailVerified: true },
+      })
+      // Kredensial hanya dibuat sekali; seed ulang tidak menimpa sandi yang sudah diganti.
+      const hasCredential = await prisma.account.findFirst({
+        where: { userId: admin.id, providerId: "credential" },
+      })
+      if (!hasCredential) {
+        await prisma.account.create({
+          data: {
+            userId: admin.id,
+            providerId: "credential",
+            accountId: admin.id,
+            password: await hashPassword(DEV_PASSWORD),
+          },
+        })
+      }
+      await prisma.membership.upsert({
+        where: {
+          schoolId_userId: { schoolId: schoolRow.id, userId: admin.id },
+        },
+        create: {
+          schoolId: schoolRow.id,
+          userId: admin.id,
+          role: "school_admin",
+        },
+        update: { role: "school_admin", status: "active", deletedAt: null },
       })
       console.log(`  user   ${school.admin.email} siap`)
     }
@@ -158,7 +194,7 @@ async function main() {
 
     console.log("\nSeed selesai.")
     console.log(
-      "Belum ada subscriptions/memberships — paket diaktifkan manual oleh Super Admin (AGENTS.md aturan 10)."
+      "Belum ada subscriptions — paket diaktifkan manual oleh Super Admin (AGENTS.md aturan 10)."
     )
   } finally {
     await prisma.$disconnect()

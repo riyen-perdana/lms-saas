@@ -1,7 +1,7 @@
 // Halaman login sekolah (US-01). Hanya bermakna di subdomain sekolah: sesi
 // berlaku per subdomain, dan akses ditentukan oleh `memberships` sekolah itu.
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 
 import { Button } from "@/components/ui/button"
@@ -29,6 +29,9 @@ function LoginPage() {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
+  // Sebelum hydrate, submit akan jadi GET native dan membawa sandi ke URL.
+  const [ready, setReady] = useState(false)
+  useEffect(() => setReady(true), [])
 
   if (area !== "school" || !schoolName) {
     return (
@@ -82,7 +85,7 @@ function LoginPage() {
         <p className="text-ds-body text-muted-foreground">{schoolName}</p>
       </header>
 
-      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
+      <form method="post" onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
         <div className="flex flex-col gap-2">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -110,7 +113,7 @@ function LoginPage() {
           </p>
         ) : null}
 
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" disabled={pending || !ready}>
           {pending ? "Memproses..." : "Masuk"}
         </Button>
       </form>

@@ -5,7 +5,11 @@
 // schoolId. Hasilnya ditaruh di `context` sehingga route, server function,
 // dan service layer bisa membacanya tanpa mengulangi parsing header.
 
-import { createMiddleware, createStart } from "@tanstack/react-start"
+import {
+  createCsrfMiddleware,
+  createMiddleware,
+  createStart,
+} from "@tanstack/react-start"
 
 import { resolveTenant } from "@/lib/tenant/resolve"
 
@@ -22,6 +26,11 @@ export const tenantMiddleware = createMiddleware({ type: "request" }).server(
   }
 )
 
+// Server function adalah RPC same-origin; tolak permintaan lintas situs.
+const csrfMiddleware = createCsrfMiddleware({
+  filter: (ctx) => ctx.handlerType === "serverFn",
+})
+
 export const startInstance = createStart(() => ({
-  requestMiddleware: [tenantMiddleware],
+  requestMiddleware: [csrfMiddleware, tenantMiddleware],
 }))
