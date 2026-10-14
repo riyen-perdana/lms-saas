@@ -23,6 +23,8 @@ import { Route as marketingPrivasiRouteImport } from './routes/(marketing)/priva
 import { Route as marketingSyaratRouteImport } from './routes/(marketing)/syarat'
 import { Route as platformPlatformRouteImport } from './routes/(platform)/platform'
 import { Route as schoolBerandaRouteImport } from './routes/(school)/beranda'
+import { Route as schoolSetupRouteImport } from './routes/(school)/setup'
+import { Route as ApiLogoRouteImport } from './routes/api/logo'
 import { Route as ApiTenantRouteImport } from './routes/api/tenant'
 import { Route as platformPlatformIndexRouteImport } from './routes/(platform)/platform.index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -99,6 +101,16 @@ const schoolBerandaRoute = schoolBerandaRouteImport.update({
   path: '/beranda',
   getParentRoute: () => rootRouteImport,
 } as any)
+const schoolSetupRoute = schoolSetupRouteImport.update({
+  id: '/(school)/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLogoRoute = ApiLogoRouteImport.update({
+  id: '/api/logo',
+  path: '/api/logo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTenantRoute = ApiTenantRouteImport.update({
   id: '/api/tenant',
   path: '/api/tenant',
@@ -141,6 +153,8 @@ export interface FileRoutesByFullPath {
   '/syarat': typeof marketingSyaratRoute
   '/platform': typeof platformPlatformRouteWithChildren
   '/beranda': typeof schoolBerandaRoute
+  '/setup': typeof schoolSetupRoute
+  '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -161,6 +175,8 @@ export interface FileRoutesByTo {
   '/privasi': typeof marketingPrivasiRoute
   '/syarat': typeof marketingSyaratRoute
   '/beranda': typeof schoolBerandaRoute
+  '/setup': typeof schoolSetupRoute
+  '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -183,6 +199,8 @@ export interface FileRoutesById {
   '/(marketing)/syarat': typeof marketingSyaratRoute
   '/(platform)/platform': typeof platformPlatformRouteWithChildren
   '/(school)/beranda': typeof schoolBerandaRoute
+  '/(school)/setup': typeof schoolSetupRoute
+  '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
   '/(marketing)/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -206,6 +224,8 @@ export interface FileRouteTypes {
     | '/syarat'
     | '/platform'
     | '/beranda'
+    | '/setup'
+    | '/api/logo'
     | '/api/tenant'
     | '/'
     | '/api/auth/$'
@@ -226,6 +246,8 @@ export interface FileRouteTypes {
     | '/privasi'
     | '/syarat'
     | '/beranda'
+    | '/setup'
+    | '/api/logo'
     | '/api/tenant'
     | '/'
     | '/api/auth/$'
@@ -247,6 +269,8 @@ export interface FileRouteTypes {
     | '/(marketing)/syarat'
     | '/(platform)/platform'
     | '/(school)/beranda'
+    | '/(school)/setup'
+    | '/api/logo'
     | '/api/tenant'
     | '/(marketing)/'
     | '/api/auth/$'
@@ -269,6 +293,8 @@ export interface RootRouteChildren {
   marketingSyaratRoute: typeof marketingSyaratRoute
   platformPlatformRoute: typeof platformPlatformRouteWithChildren
   schoolBerandaRoute: typeof schoolBerandaRoute
+  schoolSetupRoute: typeof schoolSetupRoute
+  ApiLogoRoute: typeof ApiLogoRoute
   ApiTenantRoute: typeof ApiTenantRoute
   marketingIndexRoute: typeof marketingIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -374,6 +400,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof schoolBerandaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(school)/setup': {
+      id: '/(school)/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof schoolSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/logo': {
+      id: '/api/logo'
+      path: '/api/logo'
+      fullPath: '/api/logo'
+      preLoaderRoute: typeof ApiLogoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/tenant': {
       id: '/api/tenant'
       path: '/api/tenant'
@@ -441,6 +481,8 @@ const rootRouteChildren: RootRouteChildren = {
   marketingSyaratRoute: marketingSyaratRoute,
   platformPlatformRoute: platformPlatformRouteWithChildren,
   schoolBerandaRoute: schoolBerandaRoute,
+  schoolSetupRoute: schoolSetupRoute,
+  ApiLogoRoute: ApiLogoRoute,
   ApiTenantRoute: ApiTenantRoute,
   marketingIndexRoute: marketingIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

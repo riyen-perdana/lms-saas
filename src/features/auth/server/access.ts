@@ -6,6 +6,7 @@ import { getRequestHeaders } from "@tanstack/react-start/server"
 import { isSchoolBlocked } from "@/features/auth/policy"
 import { getSchoolAccess } from "@/features/auth/service"
 import { isPlatformAdmin } from "@/features/platform/service"
+import { isSetupCompleted } from "@/features/school-setup/service"
 import { auth } from "@/lib/auth"
 import type { ResolvedTenant } from "@/lib/tenant/resolve"
 
@@ -17,6 +18,8 @@ export type AccessState =
       status: "ok"
       user: { id: string; name: string; email: string }
       role: string
+      /** Admin sekolah yang belum menyelesaikan wizard setup (OB-01). */
+      setupPending?: boolean
     }
 
 export interface LoginContext {
@@ -69,6 +72,9 @@ export const getAccess = createServerFn({ method: "GET" }).handler(
     const access = await getSchoolAccess(tenant.school.id, session.user.id)
     if (!access) return reply({ status: "no-access" })
 
-    return reply({ status: "ok", user, role: access.role })
+    const setupPending =
+      access.role === "school_admin" && !(await isSetupCompleted(tenant.school.id))
+
+    return reply({ status: "ok", user, role: access.role, setupPending })
   }
 )

@@ -9,7 +9,7 @@ Pemeriksaan: typecheck, lint, 116 test unit, 60 E2E (Playwright), dan `pnpm buil
 | --- | --- |
 | F0 Fondasi | **Selesai** — tenant, RLS, Better Auth, login per subdomain, CI |
 | F1 Landing & registrasi | **Selesai** (utang di bawah) |
-| F2 dst. | Belum dimulai |
+| F2 Onboarding & pengguna | **Berjalan** — OB-01 selesai; sisa OB-02..05, US-01..04 |
 
 ### Sudah jadi di F0–F1
 - Resolusi subdomain, `tenantDb` + RLS, test isolasi antar sekolah
@@ -27,7 +27,12 @@ Pemeriksaan: typecheck, lint, 116 test unit, 60 E2E (Playwright), dan `pnpm buil
 4. ~~LP-06~~ selesai: `seoMeta`, `/sitemap.xml`, `/robots.txt` (sekolah/platform tidak diindeks), noindex di login. Lighthouse ≥ 90 belum diukur; og:image/canonical belum ada
 5. ~~LP-02~~ selesai: `/fitur` (Kelas, Ujian CBT, Laporan orang tua) dari `src/features/marketing/features.ts`; semua poin berlabel "Segera hadir", cabut `soon: true` per poin saat fitur rilis
 
-Berikutnya F2: OB-01..05, US-01..04 (impor Excel, wizard tahun ajaran, log audit).
+### F2 (berjalan)
+- Adapter storage `src/lib/storage` (driver `local` ke `.storage/`, `memory` untuk test; env `STORAGE_DRIVER`/`STORAGE_DIR`). Kunci file `schools/<school_id>/...`. Driver S3/R2 ditambahkan nanti tanpa mengubah pemanggil
+- OB-01 selesai: tabel `academic_years`, `semesters`, `majors`, `classrooms`, `subjects` (RLS, satu tahun/semester aktif per sekolah), service di `src/features/academic`, wizard `/setup` (profil+logo, tahun ajaran, jurusan khusus SMK, rombel, mapel) dan `GET /api/logo`. Admin sekolah yang `setup_completed_at`-nya kosong diarahkan ke `/setup`
+- Server function sekolah memakai `schoolAdminMiddleware` (login, peran school_admin, tolak suspended/readonly)
+- Belum: wali kelas di rombel (OB-03), impor guru/siswa (OB-02), pergantian tahun ajaran (OB-04), kode undangan orang tua (OB-05), log audit (US-04)
+- E2E mematikan devtools lewat `VITE_E2E`; matikan server dev manual sebelum `pnpm test:e2e` agar tidak dipakai ulang
 
 ## Akun dev
 Jalankan `pnpm db:seed`. Sandi `ubah-sandi-ini-123` (atau `SEED_ADMIN_PASSWORD`).

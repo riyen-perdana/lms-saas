@@ -84,14 +84,16 @@ enum MembershipStatus {
 
 /// Tenant utama. Diidentifikasi lewat subdomain -> schools.slug.
 model School {
-  id       String       @id @default(uuid(7)) @db.Uuid
-  slug     String       @unique @db.VarChar(63)
-  npsn     String?      @unique @db.VarChar(16)
-  name     String       @db.VarChar(191)
-  level    SchoolLevel
-  status   SchoolStatus @default(trial)
-  logoUrl  String?      @map("logo_url") @db.VarChar(500)
-  timezone String       @default("Asia/Jakarta") @db.VarChar(64)
+  id               String       @id @default(uuid(7)) @db.Uuid
+  slug             String       @unique @db.VarChar(63)
+  npsn             String?      @unique @db.VarChar(16)
+  name             String       @db.VarChar(191)
+  level            SchoolLevel
+  status           SchoolStatus @default(trial)
+  logoUrl          String?      @map("logo_url") @db.VarChar(500)
+  timezone         String       @default("Asia/Jakarta") @db.VarChar(64)
+  /// Terisi saat admin menyelesaikan wizard setup pertama (OB-01).
+  setupCompletedAt DateTime?    @map("setup_completed_at") @db.Timestamptz(6)
 
   memberships   Membership[]
   subscriptions Subscription[]

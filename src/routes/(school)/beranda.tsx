@@ -19,6 +19,7 @@ export const Route = createFileRoute("/(school)/beranda")({
 
     if (area !== "school") throw redirect({ to: "/" })
     if (access.status !== "ok") throw redirect({ to: "/login" })
+    if (access.setupPending) throw redirect({ to: "/setup" })
 
     return { schoolName: schoolName ?? "Sekolah", user: access.user, role: access.role }
   },

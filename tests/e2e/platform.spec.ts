@@ -95,6 +95,7 @@ test("Super Admin mengaktifkan paket lalu menangguhkan sekolah", async ({
       name: `Sekolah Fixture ${suffix}`,
       level: "SMA",
       status: "trial",
+      setupCompletedAt: new Date(),
     },
   })
   const trial = await db.plan.findUniqueOrThrow({ where: { code: "trial" } })
@@ -164,6 +165,7 @@ test("admin sekolah yang sudah login terlempar saat sekolahnya ditangguhkan", as
       name: `Sekolah Susp ${suffix}`,
       level: "SMA",
       status: "active",
+      setupCompletedAt: new Date(),
     },
   })
   const user = await db.user.create({

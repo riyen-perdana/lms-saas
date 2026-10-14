@@ -52,10 +52,10 @@ test("sekolah baru terdaftar lalu admin bisa login di subdomainnya", async ({ pa
   await page.getByRole("button", { name: "Masuk" }).click()
 
   await expect(page).toHaveURL(
-    new RegExp(`${slug}\\.localhost:3000/beranda$`)
+    new RegExp(`${slug}\\.localhost:3000/setup$`)
   )
   await expect(
-    page.getByRole("heading", { name: "SMA Uji Pendaftaran" })
+    page.getByRole("heading", { name: "Setup SMA Uji Pendaftaran" })
   ).toBeVisible()
 })
 

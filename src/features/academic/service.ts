@@ -5,11 +5,12 @@ import { prisma } from "@/db/client"
 import { tenantDb } from "@/db/tenant"
 import type { SchoolLevel } from "@/generated/prisma/enums"
 
-import type {
-  AcademicYearInput,
-  ClassroomInput,
-  MajorInput,
-  SubjectInput,
+import {
+  GRADE_RANGES,
+  type AcademicYearInput,
+  type ClassroomInput,
+  type MajorInput,
+  type SubjectInput,
 } from "./schema"
 
 export type AcademicErrorCode = "INVALID" | "DUPLICATE" | "NOT_FOUND"
@@ -22,17 +23,6 @@ export class AcademicError extends Error {
     super(message)
     this.name = "AcademicError"
   }
-}
-
-/** Rentang tingkat (kelas) yang sah untuk tiap jenjang. */
-export const GRADE_RANGES: Record<SchoolLevel, readonly [number, number]> = {
-  SD: [1, 6],
-  MI: [1, 6],
-  SMP: [7, 9],
-  MTS: [7, 9],
-  SMA: [10, 12],
-  MA: [10, 12],
-  SMK: [10, 12],
 }
 
 const toDate = (value: string) => new Date(`${value}T00:00:00Z`)

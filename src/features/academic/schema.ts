@@ -1,5 +1,18 @@
 import { z } from "zod"
 
+import type { SchoolLevel } from "@/generated/prisma/enums"
+
+/** Rentang tingkat (kelas) yang sah untuk tiap jenjang. */
+export const GRADE_RANGES: Record<SchoolLevel, readonly [number, number]> = {
+  SD: [1, 6],
+  MI: [1, 6],
+  SMP: [7, 9],
+  MTS: [7, 9],
+  SMA: [10, 12],
+  MA: [10, 12],
+  SMK: [10, 12],
+}
+
 export const SUBJECT_GROUPS = ["umum", "produktif", "muatan_lokal"] as const
 
 export const SUBJECT_GROUP_LABELS: Record<(typeof SUBJECT_GROUPS)[number], string> = {

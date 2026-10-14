@@ -74,6 +74,7 @@ async function makeSchoolWithAdmin(tag: string) {
       name: `Sekolah Email ${tag}`,
       level: "SMA",
       status: "active",
+      setupCompletedAt: new Date(),
     },
   })
   const user = await db.user.create({
