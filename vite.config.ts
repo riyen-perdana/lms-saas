@@ -6,7 +6,14 @@ import tailwindcss from "@tailwindcss/vite"
 
 const config = defineConfig({
   resolve: { tsconfigPaths: true },
-  plugins: [devtools(), tailwindcss(), tanstackStart(), viteReact()],
+  plugins: [
+    // Console piping memantulkan log error klien <-> server tanpa henti bila ada
+    // peringatan hydration (mis. dari ekstensi browser); matikan di development.
+    devtools({ consolePiping: { enabled: false } }),
+    tailwindcss(),
+    tanstackStart(),
+    viteReact(),
+  ],
 })
 
 export default config

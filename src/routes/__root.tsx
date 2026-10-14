@@ -1,8 +1,20 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
+import {
+  HeadContent,
+  Scripts,
+  createRootRoute,
+  useMatches,
+} from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 
 import appCss from "../styles.css?url"
+
+declare module "@tanstack/react-router" {
+  interface StaticDataRouteOption {
+    /** Tema CSS untuk <html data-theme>; kosong = tema dashboard (preset shadcn). */
+    theme?: "marketing"
+  }
+}
 
 export const Route = createRootRoute({
   head: () => ({
@@ -15,7 +27,7 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStack Start Starter",
+        title: "EduSaaS",
       },
     ],
     links: [
@@ -35,12 +47,16 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const theme = useMatches({
+    select: (matches) => matches.find((m) => m.staticData.theme)?.staticData.theme,
+  })
+
   return (
-    <html lang="en">
+    <html lang="id" data-theme={theme}>
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body suppressHydrationWarning>
         {children}
         <TanStackDevtools
           config={{
