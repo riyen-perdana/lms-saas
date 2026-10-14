@@ -90,7 +90,7 @@ Aplikasi dibangun sebagai satu monolit TanStack Start dengan satu database Postg
 | Data fetching | TanStack Query | Cache & invalidasi di sisi klien |
 | ORM | Prisma ORM + Prisma Migrate | Skema deklaratif, tipe otomatis, migrasi terkelola; RLS ditambahkan lewat migrasi SQL |
 | Database | PostgreSQL 16+ | Satu DB bersama, RLS untuk isolasi tenant |
-| Auth | Better Auth (plugin organization) | Sesi, multi-organisasi, role per organisasi |
+| Auth | Better Auth (email + password; tanpa plugin organization) | Sesi host-only per subdomain; peran per sekolah lewat `memberships` + RLS |
 | Validasi | Zod | Satu skema untuk form, server function, dan env |
 | UI | Tailwind CSS v4 + shadcn/ui preset `b1GKyb59c` (style base-lyra, Base UI, Inter), landing ditimpa tema monokrom (§5.4) | Komponen konsisten, mudah dihasilkan agen AI; warna landing dan dashboard bisa diganti terpisah |
 | Form | TanStack Form atau React Hook Form + Zod | Validasi terpadu |
@@ -341,7 +341,8 @@ Semua tabel di bawah, kecuali yang bertanda **(global)**, wajib memiliki `school
 | Billing | `plans` **(global)** | code, name, price_semester, price_year, max_students, max_storage_gb, features (jsonb) |
 | Billing | `subscriptions` | plan_id, status, period_start, period_end, trial_ends_at |
 | Billing | `invoices` / `payments` | amount, status, gateway, gateway_ref (unik), paid_at, raw_payload (jsonb) |
-| Identitas | `users` **(global)** | email, name, password_hash, email_verified |
+| Identitas | `users` **(global)** | email, name, image, email_verified (kredensial di `accounts`) |
+| Identitas | `sessions` / `accounts` / `verifications` **(global)** | milik Better Auth; hash sandi di `accounts.password`, tanpa RLS |
 | Identitas | `memberships` | user_id, role (`school_admin`,`teacher`,`student`,`parent`), status |
 | Akademik | `academic_years`, `semesters` | name, start_date, end_date, is_active |
 | Akademik | `majors` | khusus SMK: kode & nama kompetensi keahlian |
