@@ -1,5 +1,5 @@
-// Beranda landing (LP-01). Hanya untuk host marketing; subdomain sekolah dan
-// platform diarahkan ke /login sampai dashboard masing-masing ada.
+// Beranda landing (LP-01). Hanya untuk host marketing; subdomain sekolah
+// diarahkan ke /login (dashboard sekolah belum ada) dan host platform ke /platform.
 
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
@@ -23,9 +23,10 @@ import { getTenantArea } from "@/lib/tenant/server"
 export const Route = createFileRoute("/(marketing)/")({
   staticData: { theme: "marketing" },
   beforeLoad: async () => {
-    if ((await getTenantArea()) !== "marketing") {
-      throw redirect({ to: "/login" })
-    }
+    const area = await getTenantArea()
+
+    if (area === "platform") throw redirect({ to: "/platform" })
+    if (area !== "marketing") throw redirect({ to: "/login" })
   },
   head: () => ({
     meta: [

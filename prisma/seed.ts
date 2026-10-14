@@ -6,7 +6,8 @@
 // Sandi dev: admin tiap sekolah dibuat dengan kredensial (hash Better Auth di
 // `accounts`) dan keanggotaan `school_admin`, supaya login lokal bisa dicoba.
 // Seed MENOLAK berjalan dengan sandi bawaan di produksi. Super Admin platform
-// belum punya model peran (F1), jadi dibuat tanpa kredensial.
+// (superadmin@edusaas.id) juga dibuat dengan kredensial dan baris platform_admins,
+// dan tiap sekolah contoh diberi langganan awal.
 
 import "dotenv/config"
 import { PrismaPg } from "@prisma/adapter-pg"
@@ -179,9 +180,37 @@ async function main() {
         update: { role: "school_admin", status: "active", deletedAt: null },
       })
       console.log(`  user   ${school.admin.email} siap`)
+
+      // Langganan contoh, hanya bila sekolah belum punya (aman diulang).
+      const hasSubscription = await prisma.subscription.findFirst({
+        where: { schoolId: schoolRow.id },
+        select: { id: true },
+      })
+      if (!hasSubscription) {
+        const isActive = school.status === "active"
+        const plan = await prisma.plan.findUniqueOrThrow({
+          where: { code: isActive ? "standard" : "trial" },
+        })
+        const now = new Date()
+        const periodEnd = new Date(now)
+        if (isActive) periodEnd.setUTCFullYear(periodEnd.getUTCFullYear() + 1)
+        else periodEnd.setUTCDate(periodEnd.getUTCDate() + 30)
+
+        await prisma.subscription.create({
+          data: {
+            schoolId: schoolRow.id,
+            planId: plan.id,
+            status: isActive ? "active" : "trial",
+            periodStart: now,
+            periodEnd,
+            trialEndsAt: isActive ? null : periodEnd,
+          },
+        })
+        console.log(`  langganan ${school.slug} (${plan.code}) siap`)
+      }
     }
 
-    await prisma.user.upsert({
+    const superAdmin = await prisma.user.upsert({
       where: { email: PLATFORM_ADMIN.email },
       create: {
         email: PLATFORM_ADMIN.email,
@@ -190,12 +219,27 @@ async function main() {
       },
       update: { name: PLATFORM_ADMIN.name, emailVerified: true },
     })
+    const superHasCredential = await prisma.account.findFirst({
+      where: { userId: superAdmin.id, providerId: "credential" },
+    })
+    if (!superHasCredential) {
+      await prisma.account.create({
+        data: {
+          userId: superAdmin.id,
+          providerId: "credential",
+          accountId: superAdmin.id,
+          password: await hashPassword(DEV_PASSWORD),
+        },
+      })
+    }
+    await prisma.platformAdmin.upsert({
+      where: { userId: superAdmin.id },
+      create: { userId: superAdmin.id },
+      update: {},
+    })
     console.log(`  user   ${PLATFORM_ADMIN.email} siap`)
 
     console.log("\nSeed selesai.")
-    console.log(
-      "Belum ada subscriptions — paket diaktifkan manual oleh Super Admin (AGENTS.md aturan 10)."
-    )
   } finally {
     await prisma.$disconnect()
   }

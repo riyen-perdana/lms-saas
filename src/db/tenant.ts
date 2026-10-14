@@ -30,7 +30,7 @@ import { prisma } from "@/db/client"
  * Wajib ditambah setiap kali ada model tenant baru — tanpa itu lapisan
  * aplikasi tidak mengunci schoolId, walaupun RLS tetap menahannya.
  */
-export const TENANT_MODELS = ["Membership"] as const
+export const TENANT_MODELS = ["Membership", "Subscription"] as const
 
 /** `Membership` -> `membership`, mengikuti aturan delegate Prisma Client. */
 export function tenantDelegate(model: (typeof TENANT_MODELS)[number]) {

@@ -57,6 +57,15 @@ enum MembershipRole {
   @@map("membership_role")
 }
 
+enum SubscriptionStatus {
+  trial
+  active
+  expired
+  canceled
+
+  @@map("subscription_status")
+}
+
 enum MembershipStatus {
   active
   inactive
@@ -76,7 +85,8 @@ model School {
   logoUrl  String?      @map("logo_url") @db.VarChar(500)
   timezone String       @default("Asia/Jakarta") @db.VarChar(64)
 
-  memberships Membership[]
+  memberships   Membership[]
+  subscriptions Subscription[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -97,6 +107,8 @@ model Plan {
   maxStorageGb  Int    @map("max_storage_gb")
   features      Json   @default("{}") @db.JsonB
 
+  subscriptions Subscription[]
+
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
@@ -113,9 +125,10 @@ model User {
   image         String? @db.VarChar(500)
   emailVerified Boolean @default(false) @map("email_verified")
 
-  accounts   Account[]
-  sessions   Session[]
-  memberships Membership[]
+  accounts      Account[]
+  sessions      Session[]
+  memberships   Membership[]
+  platformAdmin PlatformAdmin?
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -203,4 +216,42 @@ model Membership {
   @@index([schoolId, role])
   @@index([schoolId, userId])
   @@map("memberships")
+}
+
+/// Super Admin platform. Hanya baris di tabel ini yang boleh membuka dashboard
+/// app.<domain>. Sengaja tabel terpisah (bukan kolom di `users`) supaya tidak
+/// pernah ikut terisi lewat input pendaftaran Better Auth.
+model PlatformAdmin {
+  id     String @id @default(uuid(7)) @db.Uuid
+  userId String @unique @map("user_id") @db.Uuid
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("platform_admins")
+}
+
+/// Langganan sekolah. Model tenant: sekolah hanya melihat miliknya; Super Admin
+/// mengelola lewat `platformDb()` (src/db/platform.ts). Riwayat disimpan:
+/// langganan terbaru (createdAt) yang berstatus trial/active adalah yang berlaku.
+model Subscription {
+  id          String             @id @default(uuid(7)) @db.Uuid
+  schoolId    String             @map("school_id") @db.Uuid
+  planId      String             @map("plan_id") @db.Uuid
+  status      SubscriptionStatus
+  periodStart DateTime           @map("period_start") @db.Timestamptz(6)
+  periodEnd   DateTime           @map("period_end") @db.Timestamptz(6)
+  trialEndsAt DateTime?          @map("trial_ends_at") @db.Timestamptz(6)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  plan   Plan   @relation(fields: [planId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([schoolId, status])
+  @@index([schoolId, createdAt])
+  @@index([periodEnd])
+  @@map("subscriptions")
 }

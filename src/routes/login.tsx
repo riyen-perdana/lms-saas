@@ -33,7 +33,9 @@ function LoginPage() {
   const [ready, setReady] = useState(false)
   useEffect(() => setReady(true), [])
 
-  if (area !== "school" || !schoolName) {
+  const isPlatform = area === "platform"
+
+  if (!isPlatform && (area !== "school" || !schoolName)) {
     return (
       <main className="mx-auto flex min-h-svh max-w-sm flex-col justify-center gap-2 p-6">
         <h1 className="text-ds-page-title font-medium">Login sekolah</h1>
@@ -68,7 +70,11 @@ function LoginPage() {
       const { access } = await getAccess()
       if (access.status !== "ok") {
         await signOut()
-        setError("Akun ini tidak terdaftar di sekolah ini.")
+        setError(
+          isPlatform
+            ? "Akun ini bukan Super Admin."
+            : "Akun ini tidak terdaftar di sekolah ini."
+        )
         return
       }
 
@@ -82,7 +88,9 @@ function LoginPage() {
     <main className="mx-auto flex min-h-svh max-w-sm flex-col justify-center gap-6 p-6">
       <header className="flex flex-col gap-1">
         <h1 className="text-ds-page-title font-medium">Masuk</h1>
-        <p className="text-ds-body text-muted-foreground">{schoolName}</p>
+        <p className="text-ds-body text-muted-foreground">
+          {isPlatform ? "Super Admin EduSaaS" : schoolName}
+        </p>
       </header>
 
       <form method="post" onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>

@@ -64,6 +64,19 @@ describe("registerSchool", () => {
     expect(await getSchoolAccess(school.id, user.id)).toMatchObject({
       role: "school_admin",
     })
+
+    // Trial 30 hari tercatat sebagai langganan.
+    const subscription = await admin.subscription.findFirstOrThrow({
+      where: { schoolId: school.id },
+      include: { plan: true },
+    })
+    expect(subscription.status).toBe("trial")
+    expect(subscription.plan.code).toBe("trial")
+    const days =
+      (subscription.periodEnd.getTime() - subscription.periodStart.getTime()) /
+      (24 * 3600 * 1000)
+    expect(days).toBe(30)
+    expect(subscription.trialEndsAt?.getTime()).toBe(subscription.periodEnd.getTime())
   })
 
   it("isolasi: admin sekolah A tidak punya akses ke sekolah B", async () => {

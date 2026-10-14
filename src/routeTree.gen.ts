@@ -12,8 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as marketingIndexRouteImport } from './routes/(marketing)/index'
 import { Route as marketingDaftarRouteImport } from './routes/(marketing)/daftar'
+import { Route as platformPlatformRouteImport } from './routes/(platform)/platform'
 import { Route as ApiTenantRouteImport } from './routes/api/tenant'
+import { Route as platformPlatformIndexRouteImport } from './routes/(platform)/platform.index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as platformPlatformSekolahIndexRouteImport } from './routes/(platform)/platform.sekolah.index'
+import { Route as platformPlatformSekolahSchoolIdRouteImport } from './routes/(platform)/platform.sekolah.$schoolId'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -30,23 +34,49 @@ const marketingDaftarRoute = marketingDaftarRouteImport.update({
   path: '/daftar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const platformPlatformRoute = platformPlatformRouteImport.update({
+  id: '/(platform)/platform',
+  path: '/platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTenantRoute = ApiTenantRouteImport.update({
   id: '/api/tenant',
   path: '/api/tenant',
   getParentRoute: () => rootRouteImport,
+} as any)
+const platformPlatformIndexRoute = platformPlatformIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => platformPlatformRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const platformPlatformSekolahIndexRoute =
+  platformPlatformSekolahIndexRouteImport.update({
+    id: '/sekolah/',
+    path: '/sekolah/',
+    getParentRoute: () => platformPlatformRoute,
+  } as any)
+const platformPlatformSekolahSchoolIdRoute =
+  platformPlatformSekolahSchoolIdRouteImport.update({
+    id: '/sekolah/$schoolId',
+    path: '/sekolah/$schoolId',
+    getParentRoute: () => platformPlatformRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/daftar': typeof marketingDaftarRoute
+  '/platform': typeof platformPlatformRouteWithChildren
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/platform/': typeof platformPlatformIndexRoute
+  '/platform/sekolah/$schoolId': typeof platformPlatformSekolahSchoolIdRoute
+  '/platform/sekolah/': typeof platformPlatformSekolahIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -54,32 +84,61 @@ export interface FileRoutesByTo {
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/platform': typeof platformPlatformIndexRoute
+  '/platform/sekolah/$schoolId': typeof platformPlatformSekolahSchoolIdRoute
+  '/platform/sekolah': typeof platformPlatformSekolahIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/login': typeof LoginRoute
   '/(marketing)/daftar': typeof marketingDaftarRoute
+  '/(platform)/platform': typeof platformPlatformRouteWithChildren
   '/api/tenant': typeof ApiTenantRoute
   '/(marketing)/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/(platform)/platform/': typeof platformPlatformIndexRoute
+  '/(platform)/platform/sekolah/$schoolId': typeof platformPlatformSekolahSchoolIdRoute
+  '/(platform)/platform/sekolah/': typeof platformPlatformSekolahIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/daftar' | '/api/tenant' | '/' | '/api/auth/$'
+  fullPaths:
+    | '/login'
+    | '/daftar'
+    | '/platform'
+    | '/api/tenant'
+    | '/'
+    | '/api/auth/$'
+    | '/platform/'
+    | '/platform/sekolah/$schoolId'
+    | '/platform/sekolah/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/daftar' | '/api/tenant' | '/' | '/api/auth/$'
+  to:
+    | '/login'
+    | '/daftar'
+    | '/api/tenant'
+    | '/'
+    | '/api/auth/$'
+    | '/platform'
+    | '/platform/sekolah/$schoolId'
+    | '/platform/sekolah'
   id:
     | '__root__'
     | '/login'
     | '/(marketing)/daftar'
+    | '/(platform)/platform'
     | '/api/tenant'
     | '/(marketing)/'
     | '/api/auth/$'
+    | '/(platform)/platform/'
+    | '/(platform)/platform/sekolah/$schoolId'
+    | '/(platform)/platform/sekolah/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   marketingDaftarRoute: typeof marketingDaftarRoute
+  platformPlatformRoute: typeof platformPlatformRouteWithChildren
   ApiTenantRoute: typeof ApiTenantRoute
   marketingIndexRoute: typeof marketingIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -108,12 +167,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof marketingDaftarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(platform)/platform': {
+      id: '/(platform)/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof platformPlatformRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/tenant': {
       id: '/api/tenant'
       path: '/api/tenant'
       fullPath: '/api/tenant'
       preLoaderRoute: typeof ApiTenantRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/(platform)/platform/': {
+      id: '/(platform)/platform/'
+      path: '/'
+      fullPath: '/platform/'
+      preLoaderRoute: typeof platformPlatformIndexRouteImport
+      parentRoute: typeof platformPlatformRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -122,12 +195,42 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(platform)/platform/sekolah/': {
+      id: '/(platform)/platform/sekolah/'
+      path: '/sekolah'
+      fullPath: '/platform/sekolah/'
+      preLoaderRoute: typeof platformPlatformSekolahIndexRouteImport
+      parentRoute: typeof platformPlatformRoute
+    }
+    '/(platform)/platform/sekolah/$schoolId': {
+      id: '/(platform)/platform/sekolah/$schoolId'
+      path: '/sekolah/$schoolId'
+      fullPath: '/platform/sekolah/$schoolId'
+      preLoaderRoute: typeof platformPlatformSekolahSchoolIdRouteImport
+      parentRoute: typeof platformPlatformRoute
+    }
   }
 }
+
+interface platformPlatformRouteChildren {
+  platformPlatformIndexRoute: typeof platformPlatformIndexRoute
+  platformPlatformSekolahSchoolIdRoute: typeof platformPlatformSekolahSchoolIdRoute
+  platformPlatformSekolahIndexRoute: typeof platformPlatformSekolahIndexRoute
+}
+
+const platformPlatformRouteChildren: platformPlatformRouteChildren = {
+  platformPlatformIndexRoute: platformPlatformIndexRoute,
+  platformPlatformSekolahSchoolIdRoute: platformPlatformSekolahSchoolIdRoute,
+  platformPlatformSekolahIndexRoute: platformPlatformSekolahIndexRoute,
+}
+
+const platformPlatformRouteWithChildren =
+  platformPlatformRoute._addFileChildren(platformPlatformRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   marketingDaftarRoute: marketingDaftarRoute,
+  platformPlatformRoute: platformPlatformRouteWithChildren,
   ApiTenantRoute: ApiTenantRoute,
   marketingIndexRoute: marketingIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

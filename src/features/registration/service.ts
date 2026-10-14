@@ -8,6 +8,7 @@ import { hashPassword } from "better-auth/crypto"
 import { prisma } from "@/db/client"
 import { tenantDb } from "@/db/tenant"
 import type { RegisterSchoolInput } from "@/features/registration/schema"
+import { createTrialSubscription } from "@/features/subscription/trial"
 import { isValidSlug } from "@/lib/tenant/host"
 import { uuidv7 } from "@/lib/uuid"
 
@@ -91,11 +92,12 @@ export async function registerSchool(
       }),
     ])
 
-    await tenantDb(schoolId, (db) =>
-      db.membership.create({
+    await tenantDb(schoolId, async (db) => {
+      await db.membership.create({
         data: { schoolId, userId, role: "school_admin" },
       })
-    )
+      await createTrialSubscription(db, schoolId)
+    })
   } catch (error) {
     // Pendaftaran dua tahap (global lalu tenant) tidak satu transaksi: bila
     // tahap membership gagal, hapus sekolah dan user agar tidak yatim.
