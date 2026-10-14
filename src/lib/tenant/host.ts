@@ -68,3 +68,21 @@ export function parseHost(host: string | null | undefined): HostTenant {
 
   return { area: "school", slug: subdomain }
 }
+
+/**
+ * URL dasar subdomain sekolah dari host request saat ini, mis.
+ *   localhost:3000 + "man3pku"  -> http://man3pku.localhost:3000
+ *   www.edusaas.id + "man3pku"  -> https://man3pku.edusaas.id
+ * Dipakai setelah pendaftaran untuk mengarahkan admin ke subdomain barunya.
+ */
+export function schoolBaseUrl(
+  host: string | null | undefined,
+  slug: string
+): string {
+  const cleaned = (host ?? "").trim().toLowerCase()
+  const hostname = cleaned.replace(/:\d+$/, "")
+  const isLocalDev = hostname === "localhost" || hostname.endsWith(".localhost")
+  const root = cleaned.replace(/^(www|app)\./, "")
+
+  return `${isLocalDev ? "http" : "https"}://${slug}.${root}`
+}

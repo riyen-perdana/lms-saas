@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { isValidSlug, parseHost } from "@/lib/tenant/host"
+import { isValidSlug, parseHost, schoolBaseUrl } from "@/lib/tenant/host"
 
 describe("parseHost", () => {
   it("menandai apex dan www sebagai marketing", () => {
@@ -88,5 +88,25 @@ describe("isValidSlug", () => {
   it("menolak slug lebih dari 63 karakter", () => {
     expect(isValidSlug("a".repeat(63))).toBe(true)
     expect(isValidSlug("a".repeat(64))).toBe(false)
+  })
+})
+
+describe("schoolBaseUrl", () => {
+  it("membangun URL subdomain untuk development", () => {
+    expect(schoolBaseUrl("localhost:3000", "man3pku")).toBe(
+      "http://man3pku.localhost:3000"
+    )
+  })
+
+  it("membuang www dan app, memakai https di produksi", () => {
+    expect(schoolBaseUrl("www.edusaas.id", "man3pku")).toBe(
+      "https://man3pku.edusaas.id"
+    )
+    expect(schoolBaseUrl("edusaas.id", "man3pku")).toBe(
+      "https://man3pku.edusaas.id"
+    )
+    expect(schoolBaseUrl("app.localhost:3000", "man3pku")).toBe(
+      "http://man3pku.localhost:3000"
+    )
   })
 })

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as marketingIndexRouteImport } from './routes/(marketing)/index'
+import { Route as marketingDaftarRouteImport } from './routes/(marketing)/daftar'
 import { Route as ApiTenantRouteImport } from './routes/api/tenant'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
@@ -22,6 +23,11 @@ const LoginRoute = LoginRouteImport.update({
 const marketingIndexRoute = marketingIndexRouteImport.update({
   id: '/(marketing)/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const marketingDaftarRoute = marketingDaftarRouteImport.update({
+  id: '/(marketing)/daftar',
+  path: '/daftar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTenantRoute = ApiTenantRouteImport.update({
@@ -37,12 +43,14 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
+  '/daftar': typeof marketingDaftarRoute
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/daftar': typeof marketingDaftarRoute
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -50,20 +58,28 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/login': typeof LoginRoute
+  '/(marketing)/daftar': typeof marketingDaftarRoute
   '/api/tenant': typeof ApiTenantRoute
   '/(marketing)/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/api/tenant' | '/' | '/api/auth/$'
+  fullPaths: '/login' | '/daftar' | '/api/tenant' | '/' | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/api/tenant' | '/' | '/api/auth/$'
-  id: '__root__' | '/login' | '/api/tenant' | '/(marketing)/' | '/api/auth/$'
+  to: '/login' | '/daftar' | '/api/tenant' | '/' | '/api/auth/$'
+  id:
+    | '__root__'
+    | '/login'
+    | '/(marketing)/daftar'
+    | '/api/tenant'
+    | '/(marketing)/'
+    | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
+  marketingDaftarRoute: typeof marketingDaftarRoute
   ApiTenantRoute: typeof ApiTenantRoute
   marketingIndexRoute: typeof marketingIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -85,6 +101,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof marketingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(marketing)/daftar': {
+      id: '/(marketing)/daftar'
+      path: '/daftar'
+      fullPath: '/daftar'
+      preLoaderRoute: typeof marketingDaftarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/tenant': {
       id: '/api/tenant'
       path: '/api/tenant'
@@ -104,6 +127,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
+  marketingDaftarRoute: marketingDaftarRoute,
   ApiTenantRoute: ApiTenantRoute,
   marketingIndexRoute: marketingIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
