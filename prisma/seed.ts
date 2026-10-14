@@ -3,16 +3,14 @@
 // Isi: paket langganan, 2 sekolah tenant, dan user admin. Jalankan dengan
 // `pnpm db:seed`. Idempoten (upsert pada kunci unik), jadi aman diulang.
 //
-// PENTING: `passwordHash` di sini adalah placeholder, bukan hash sungguhan.
-// Better Auth dan tabel `memberships` menyusul di F0 bagian 2; hash asli akan
-// dibuat oleh Better Auth saat login pertama.
+// PENTING: user di sini dibuat TANPA kredensial. Hash sandi disimpan Better Auth
+// di tabel `accounts`, jadi sandi awal harus dibuat lewat alur Better Auth
+// (mis. daftar / atur ulang sandi), bukan lewat seed.
 
 import "dotenv/config"
 import { PrismaPg } from "@prisma/adapter-pg"
 
 import { PrismaClient } from "../src/generated/prisma/client.js"
-
-const PLACEHOLDER_PASSWORD_HASH = "SEBELUM-BETTER-AUTH"
 
 const PLANS = [
   {
@@ -140,7 +138,6 @@ async function main() {
         create: {
           email: school.admin.email,
           name: school.admin.name,
-          passwordHash: PLACEHOLDER_PASSWORD_HASH,
           emailVerified: true,
         },
         update: { name: school.admin.name, emailVerified: true },
@@ -153,7 +150,6 @@ async function main() {
       create: {
         email: PLATFORM_ADMIN.email,
         name: PLATFORM_ADMIN.name,
-        passwordHash: PLACEHOLDER_PASSWORD_HASH,
         emailVerified: true,
       },
       update: { name: PLATFORM_ADMIN.name, emailVerified: true },

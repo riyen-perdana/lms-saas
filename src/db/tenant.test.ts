@@ -51,21 +51,18 @@ beforeAll(async () => {
     data: {
       email: `uji-a-${suffix}@sekolah.test`,
       name: "Guru A",
-      passwordHash: "x",
     },
   })
   const userB = await admin.user.create({
     data: {
       email: `uji-b-${suffix}@sekolah.test`,
       name: "Guru B",
-      passwordHash: "x",
     },
   })
   const userExtra = await admin.user.create({
     data: {
       email: `uji-ekstra-${suffix}@sekolah.test`,
       name: "Orang Tua",
-      passwordHash: "x",
     },
   })
   const membershipA = await admin.membership.create({
