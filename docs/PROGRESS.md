@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
-Terakhir diperbarui: 2026-10-14 · commit `6fe3dc5`
-Pemeriksaan: typecheck, lint, 116 test unit, 60 E2E (Playwright), dan `pnpm build` hijau.
+Terakhir diperbarui: 2026-10-15 · commit `5654607`
+Pemeriksaan: typecheck, lint, 154 test unit, 69 E2E (Playwright), dan `pnpm build` hijau.
 
 ## Status per fase (PRD §10)
 
@@ -51,6 +51,11 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - Super Admin = baris di tabel `platform_admins`; akses lintas sekolah lewat `platformDb()` (flag RLS `app.is_platform`).
 - Cache tenant 30 detik per proses; `invalidateTenantCache` dipanggil saat status berubah.
 - Worker pg-boss berjalan di dalam proses aplikasi; pisahkan ke proses worker saat deploy (F6).
+- Email dev memakai driver `console` (cetak + simpan ke `.email-outbox/`); penyedia nyata ditambahkan sebagai driver di `src/lib/email/index.ts`.
+- Dashboard platform di `/platform/*` pada host `app.localhost`; sekolah punya `/beranda` (placeholder) dan `/setup` (wizard OB-01).
+- Server function sekolah memakai `schoolAdminMiddleware` (`src/features/auth/server/school-admin.ts`); tolak sekolah `suspended` dan `readonly`.
+- Penyimpanan file lewat `src/lib/storage` (driver `local` ke `.storage/`); kunci selalu `schools/<school_id>/...`.
+- Wali kelas di rombel (`homeroom_teacher_id`) sengaja belum ada; ditambahkan di OB-03 setelah tabel guru ada.
 
 ## Utang / belum ada
 - Email pemberitahuan trial segera berakhir; penyedia email nyata (hanya driver `console`/`memory`)
@@ -61,4 +66,12 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - Setelah `prisma migrate`/`generate`, matikan server dev lama di port 3000 sebelum menjalankan E2E.
 - Aksi di form klien harus menunggu hydrate; di E2E pakai `expect(...).toPass()`.
 - Skema Zod dipakai klien lalu server, jadi harus idempoten (parse dua kali).
-- Migrasi baru harus bertimestamp setelah `20261015120000_better_auth`.
+- Migrasi baru harus bertimestamp setelah migrasi terakhir di `prisma/migrations/`. `prisma migrate dev` memakai jam sistem untuk nama folder, jadi cek dan rename bila perlu (jangan ubah migrasi yang sudah diterapkan).
+- E2E mematikan devtools lewat `VITE_E2E` (tombolnya menutupi tombol kanan-bawah di layar 360px). Server dev yang dijalankan manual dipakai ulang oleh Playwright dan menampilkan devtools, jadi matikan dulu.
+- Assertion E2E "bukan /login" terlalu lemah; pakai URL tujuan yang positif.
+- Fixture E2E yang membuat sekolah langsung harus mengisi `setupCompletedAt`, kalau tidak login diarahkan ke `/setup`.
+- Form dan aksi klien dinonaktifkan sampai hydrate (`useHydrated` di `src/components/dashboard/form-field.tsx`), supaya submit tidak menjadi GET native.
+- Test integrasi memakai `DATABASE_URL` (superuser) untuk fixture dan `DATABASE_APP_URL` (role `edusaas_app`, kena RLS) lewat service; jangan membalik keduanya.
+- Console piping devtools dimatikan di `vite.config.ts` (memantulkan log hydration dari ekstensi browser).
+- Log `Error: aborted ... ECONNRESET` di server dev muncul saat browser menutup koneksi; tidak berbahaya.
+- Windows/CRLF: edit file lewat tool Edit; skrip Python harus membuka file dengan `newline=''`. Perintah bash yang sangat panjang bisa gagal di-parse, tulis file lewat tool Write.

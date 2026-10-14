@@ -1,6 +1,7 @@
 # EduSaaS — LMS multi-tenant untuk sekolah
 
 Baca docs/PRD.md sebelum mengerjakan fitur. Rujuk kode kebutuhan (mis. CB-04).
+Baca juga docs/PROGRESS.md: status pengerjaan, keputusan desain, utang, akun dev, dan jebakan yang sudah pernah kena. Perbarui file itu setelah menyelesaikan satu kode kebutuhan.
 
 ## Stack
 TanStack Start + Router + Query, Prisma ORM, PostgreSQL, Better Auth,
