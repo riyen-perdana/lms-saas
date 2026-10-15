@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
 Terakhir diperbarui: 2026-10-15
-Pemeriksaan: typecheck hijau; lint 0 error (2 warning lama `no-shadow` di `src/components/ui/sidebar.tsx` masih dilaporkan, belum diperbaiki); 335 test unit hijau (36 berkas); E2E (Playwright): 103 lulus, 1 skipped, 0 gagal (104 tes, desktop + mobile-360). `pnpm build` tidak dijalankan pada pemeriksaan ini.
+Pemeriksaan: typecheck hijau; lint bersih (0 error, 0 warning); 340 test unit hijau (37 berkas); E2E (Playwright): 103 lulus, 1 skipped, 0 gagal (104 tes, desktop + mobile-360). `pnpm build` tidak dijalankan pada pemeriksaan ini.
 
 ## Status per fase (PRD §10)
 
@@ -104,7 +104,7 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - UI ubah/hapus data guru & siswa: daftar baca-saja + pencarian sudah ada di `/pengguna` (US-02); ubah/hapus, paginasi, dan DataTable belum
 - US-01: siswa mengubah PIN sendiri; UI login khusus SD (ramah anak); masa berlaku PIN
 - US-01 minor tertunda: galat jaringan saat fetch login siswa tidak menampilkan pesan (sama seperti jalur email); nama berkas CSV (`pin-<rombel>.csv`) belum disanitasi; ARIA tab login minimal (tanpa `tabpanel`/navigasi panah)
-- Lint: 2 warning `no-shadow` lama di `src/components/ui/sidebar.tsx` masih dilaporkan oleh `pnpm lint` (butir terbuka, bukan diterima)
+- `src/components/ui/sidebar.tsx`: parameter updater di `toggleSidebar` diganti nama menjadi `current` (sebelumnya `open` menimpa variabel luar dan memicu 2 warning `no-shadow`). Ini file hasil shadcn: bila `npx shadcn add sidebar` dijalankan ulang, perubahan itu tertimpa dan 2 warning kembali; terapkan lagi penggantian nama yang sama
 - Daftar siswa umum di UI admin (OB-05 hanya menampilkan siswa per rombel); kode undangan lama tidak bisa ditampilkan ulang (buat baru)
 - US-04: tampilan log lintas sekolah untuk Super Admin, ekspor, dan masa simpan/pembersihan log belum ada; `/audit` memakai `schoolAdminMiddleware` sehingga tidak terbuka untuk sekolah mode hanya-baca
 - Tinggal kelas / pindah rombel per siswa (butuh UI daftar siswa); status lulus pada profil siswa (OB-04)
