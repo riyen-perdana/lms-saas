@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
 Terakhir diperbarui: 2026-10-15
-Pemeriksaan: typecheck, lint, 298 test unit, 98 E2E (Playwright, 1 skipped), dan `pnpm build` hijau.
+Pemeriksaan: typecheck, lint (2 warning lama di `ui/sidebar.tsx`), dan 308 test unit hijau. E2E (Playwright): 97 lulus, 1 skipped, 2 gagal � keduanya `platform.spec.ts > Super Admin melihat ringkasan dan daftar sekolah` (chromium + mobile-360), bukan dari US-02: heading "Ringkasan" hilang sejak commit `8ab9505` (dashboard platform gaya SKPI), spec belum disesuaikan. `pnpm build` tidak dijalankan pada pemeriksaan ini.
 
 ## Status per fase (PRD §10)
 
@@ -9,7 +9,7 @@ Pemeriksaan: typecheck, lint, 298 test unit, 98 E2E (Playwright, 1 skipped), dan
 | --- | --- |
 | F0 Fondasi | **Selesai** — tenant, RLS, Better Auth, login per subdomain, CI |
 | F1 Landing & registrasi | **Selesai** (utang di bawah) |
-| F2 Onboarding & pengguna | **Berjalan** — OB-01 s.d. OB-05, US-04, dan US-03 selesai; sisa US-02, US-01 (login siswa SD via NIS+PIN) |
+| F2 Onboarding & pengguna | **Berjalan** — OB-01 s.d. OB-05, US-04, US-03, dan US-02 selesai; sisa US-01 (login siswa SD via NIS+PIN, termasuk reset PIN siswa oleh admin) |
 | Pekerjaan UI sekolah | **Tahap 1 selesai** (shell sidebar + breadcrumb + menu akun). Berikutnya Tahap 2 (DataTable daftar-detail) dan Tahap 3 (penataan halaman + KPI beranda) |
 
 ### Sudah jadi di F0–F1
@@ -18,7 +18,6 @@ Pemeriksaan: typecheck, lint, 298 test unit, 98 E2E (Playwright, 1 skipped), dan
 - LP-01 landing, LP-04 pendaftaran sekolah (cek subdomain real-time, trial 30 hari)
 - Dashboard Super Admin (`app.localhost:3000/platform`): ringkasan, daftar sekolah, aktivasi paket manual, penangguhan
 - Sekolah `suspended` ditolak di login dan pada sesi yang sudah ada
-- US-02: reset sandi, verifikasi email (adapter email + antrean pg-boss)
 - Job kedaluwarsa langganan tiap 30 menit
 
 ### Sisa F1 (urutan disarankan)
@@ -37,8 +36,9 @@ Pemeriksaan: typecheck, lint, 298 test unit, 98 E2E (Playwright, 1 skipped), dan
 - OB-05 selesai: tabel `parent_links` (RLS, indeks unik parsial), modul `src/features/parent-link`, halaman admin `/orang-tua` (kode per siswa + massal per rombel -> CSV, cabut) dan halaman publik `/gabung` (orang tua mendaftar/menautkan lewat kode); beranda orang tua menampilkan anak tertaut
 - US-04 selesai: tabel `audit_logs` (RLS, hak UPDATE/DELETE dicabut dari `edusaas_app`), modul `src/features/audit` (`recordAudit`, `listAuditLogs`), halaman admin `/audit` (filter aksi, paginasi kursor). Dicatat: aktivasi paket, tangguhkan/aktifkan sekolah, mulai impor, kenaikan kelas, cabut tautan orang tua, hapus kelas pembelajaran, cabut wali kelas
 - US-03 selesai: keputusan izin satu pintu di `features/auth/authorize.ts` (`authorizeSchoolRequest`, murni + teruji lewat matriks peran x status sekolah x sekolah lain); helper server `server/authorize-request.ts`; middleware `schoolAdminMiddleware` dan `schoolParentMiddleware`; route API unduhan memakai `requireSchoolRoleForRequest`. `permission-audit.test.ts` memindai kode: setiap `createServerFn` WAJIB memakai salah satu middleware penjaga atau terdaftar di `PUBLIC_SERVER_FNS` (dengan alasan); setiap route `api/*` WAJIB memakai `requireSchoolRoleForRequest` atau terdaftar di `PUBLIC_API_ROUTES`. `/api/tenant` kini 404 di produksi
+- US-02 selesai: swalayan (`/lupa-sandi`, `/atur-ulang-sandi`, verifikasi email lewat adapter email + antrean pg-boss) + halaman admin `/pengguna` (menu "Pengguna" di grup Data) dan modul `src/features/user-management` (`listPeople`, `requestTeacherPasswordReset`; server function `listPeopleFn`, `requestTeacherResetFn`). Admin mencari/menyaring guru & siswa lalu mereset sandi guru: tautan atur sandi dikirim ke email guru (sandi tidak pernah terlihat admin). Aksi audit baru `user.password_reset` (tanpa data sensitif). Konfirmasi inline ("Ya, kirim"), bukan dialog. Daftar dibatasi 100 baris. Siswa tampil tanpa tombol, hanya catatan "Reset PIN tersedia setelah login NIS+PIN". Isolasi antar sekolah dan NOT_FOUND seragam teruji; E2E `tests/e2e/user-management.spec.ts`
 - Server function sekolah memakai `schoolAdminMiddleware` (login, peran school_admin, tolak suspended/readonly)
-- Belum: daftar/ubah data guru & siswa di UI (OB-02 baru impor), log audit (US-04)
+- Belum: ubah/hapus data guru & siswa di UI (daftar baca-saja sudah ada di `/pengguna`)
 - E2E mematikan devtools lewat `VITE_E2E`; matikan server dev manual sebelum `pnpm test:e2e` agar tidak dipakai ulang
 
 ## Akun dev
@@ -86,11 +86,16 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - OB-02: `assertSafeXlsx` (excel.ts) menolak zip bomb dengan menjumlahkan ukuran terdekompresi di central directory (batas 50 MB, maks 2.000 entri) sebelum exceljs membuka berkas. Email kembar di dalam berkas ditolak per baris.
 - OB-02: berkas sumber dihapus dari storage setelah diproses (data pribadi siswa, UU PDP); laporan error disimpan per baris di `import_errors` sehingga bisa diunduh ulang kapan saja.
 - OB-02: Route unduhan memakai helper sendiri `requireSchoolAdminForDownload()` karena `schoolAdminMiddleware` hanya untuk server function.
+- US-02: `schoolHost` kini di `src/lib/tenant/host.ts` (sebelumnya di modul lain) supaya dipakai bersama oleh impor dan reset sandi
+- US-02: siswa tidak menampilkan email di daftar `/pengguna` (email palsu `<nis>@<slug>.invalid`); tampil "�"
+- US-02: email reset tidak di-await di dalam transaksi, jadi audit `user.password_reset` tercatat walau pengiriman email gagal diam-diam (admin hanya tahu "permintaan diterima")
+- US-02: daftar dibatasi 100 baris; saat terpotong, urutan dari DB dan urutan `localeCompare` bisa berbeda sehingga baris yang terpotong tidak selalu yang terakhir menurut tampilan; admin diminta mempersempit pencarian
 - Shell sekolah: layout pathless `src/routes/(school)/_app.tsx` memegang penjaga akses + `SchoolShell`; route admin hanya cek `context.role`. `/setup` dan `/gabung` di luar shell. Menu per peran didefinisikan di `school-nav.ts` (menu modul baru ditambahkan di sana). Halaman admin selain beranda kini juga mengarahkan admin yang belum setup ke `/setup`. Halaman-halaman admin masih memakai `max-w-3xl` tanpa `mx-auto` (rata kiri di dalam shell) sampai dirapikan di Tahap 2/3.
 
 ## Utang / belum ada
 - Email pemberitahuan trial segera berakhir; penyedia email nyata (hanya driver `console`/`memory`)
-- UI daftar/ubah/hapus data guru & siswa (OB-02 baru mengimpor; belum ada layar daftar, pencarian, atau ubah data)
+- UI ubah/hapus data guru & siswa: daftar baca-saja + pencarian sudah ada di `/pengguna` (US-02); ubah/hapus, paginasi, dan DataTable belum
+- Reset PIN siswa oleh admin -> dikerjakan bersama US-01 (login NIS+PIN)
 - Daftar siswa umum di UI admin (OB-05 hanya menampilkan siswa per rombel); kode undangan lama tidak bisa ditampilkan ulang (buat baru)
 - US-04: tampilan log lintas sekolah untuk Super Admin, ekspor, dan masa simpan/pembersihan log belum ada; `/audit` memakai `schoolAdminMiddleware` sehingga tidak terbuka untuk sekolah mode hanya-baca
 - Tinggal kelas / pindah rombel per siswa (butuh UI daftar siswa); status lulus pada profil siswa (OB-04)
