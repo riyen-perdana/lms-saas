@@ -1,0 +1,2 @@
+# File hasil generator TanStack Router: selalu LF, jangan dikonversi oleh core.autocrlf.
+src/routeTree.gen.ts text eol=lf
