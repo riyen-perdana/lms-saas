@@ -130,6 +130,7 @@ model School {
   teachers      Teacher[]
   students      Student[]
   enrollments   Enrollment[]
+  courses       Course[]
   importBatches ImportBatch[]
   importErrors  ImportError[]
 
@@ -362,6 +363,7 @@ model Semester {
   school       School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   academicYear AcademicYear @relation(fields: [academicYearId], references: [id], onDelete: Cascade)
   classrooms   Classroom[]
+  courses      Course[]
 
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -390,19 +392,24 @@ model Major {
   @@map("majors")
 }
 
-/// Rombel (rombongan belajar) per semester. Wali kelas ditambahkan di OB-03.
+/// Rombel (rombongan belajar) per semester. Wali kelas diisi di OB-03.
 model Classroom {
-  id         String  @id @default(uuid(7)) @db.Uuid
-  schoolId   String  @map("school_id") @db.Uuid
-  semesterId String  @map("semester_id") @db.Uuid
-  grade      Int     @db.SmallInt
-  majorId    String? @map("major_id") @db.Uuid
-  name       String  @db.VarChar(64)
+  id                String  @id @default(uuid(7)) @db.Uuid
+  schoolId          String  @map("school_id") @db.Uuid
+  semesterId        String  @map("semester_id") @db.Uuid
+  grade             Int     @db.SmallInt
+  majorId           String? @map("major_id") @db.Uuid
+  name              String  @db.VarChar(64)
+  /// Wali kelas. Satu guru hanya boleh menjadi wali satu rombel per semester;
+  /// dijamin indeks unik parsial di migrasi (semua kolom ada di baris ini).
+  homeroomTeacherId String? @map("homeroom_teacher_id") @db.Uuid
 
-  school      School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  semester    Semester     @relation(fields: [semesterId], references: [id], onDelete: Cascade)
-  major       Major?       @relation(fields: [majorId], references: [id], onDelete: SetNull)
-  enrollments Enrollment[]
+  school          School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  semester        Semester     @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  major           Major?       @relation(fields: [majorId], references: [id], onDelete: SetNull)
+  homeroomTeacher Teacher?     @relation(fields: [homeroomTeacherId], references: [id], onDelete: SetNull)
+  enrollments     Enrollment[]
+  courses         Course[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -421,7 +428,8 @@ model Subject {
   name     String       @db.VarChar(120)
   group    SubjectGroup @default(umum)
 
-  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  school  School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  courses Course[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -445,8 +453,10 @@ model Teacher {
   gender   Gender?
   phone    String? @db.VarChar(20)
 
-  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school    School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courses   Course[]
+  homerooms Classroom[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -499,6 +509,39 @@ model Enrollment {
   @@index([schoolId, studentId])
   @@index([schoolId, classroomId])
   @@map("enrollments")
+}
+
+/// Kelas pembelajaran (OB-03): satu kombinasi rombel x mapel x guru pada satu
+/// semester. `semester_id` memang bisa diturunkan dari rombel, tapi PRD §7
+/// menyebutnya eksplisit dan service memakainya sebagai pemeriksaan integritas
+/// (rombel harus berada pada semester yang sama).
+///
+/// Unik per (rombel, mapel, semester) selama belum dihapus — dijamin indeks unik
+/// parsial `courses_classroom_subject_semester_active_idx` di migrasi, jadi
+/// indeks ini sengaja TIDAK ditulis sebagai @@unique.
+model Course {
+  id          String @id @default(uuid(7)) @db.Uuid
+  schoolId    String @map("school_id") @db.Uuid
+  classroomId String @map("classroom_id") @db.Uuid
+  subjectId   String @map("subject_id") @db.Uuid
+  teacherId   String @map("teacher_id") @db.Uuid
+  semesterId  String @map("semester_id") @db.Uuid
+
+  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+  subject   Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  teacher   Teacher   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  semester  Semester  @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@index([schoolId, semesterId])
+  @@index([schoolId, classroomId])
+  @@index([schoolId, subjectId])
+  @@index([schoolId, teacherId])
+  @@map("courses")
 }
 
 /// Satu unggahan impor Excel beserta hasilnya (OB-02). Status `queued`

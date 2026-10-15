@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
 Terakhir diperbarui: 2026-10-15
-Pemeriksaan: typecheck, lint, 172 test unit, 73 E2E (Playwright), dan `pnpm build` hijau.
+Pemeriksaan: typecheck, lint, 204 test unit, 77 E2E (Playwright, 1 skipped), dan `pnpm build` hijau.
 
 ## Status per fase (PRD §10)
 
@@ -9,7 +9,7 @@ Pemeriksaan: typecheck, lint, 172 test unit, 73 E2E (Playwright), dan `pnpm buil
 | --- | --- |
 | F0 Fondasi | **Selesai** — tenant, RLS, Better Auth, login per subdomain, CI |
 | F1 Landing & registrasi | **Selesai** (utang di bawah) |
-| F2 Onboarding & pengguna | **Berjalan** — OB-01 selesai; sisa OB-02..05, US-01..04 |
+| F2 Onboarding & pengguna | **Berjalan** — OB-01 s.d. OB-03 selesai; sisa OB-04, OB-05, US-01 (login siswa SD via NIS+PIN), US-04 |
 
 ### Sudah jadi di F0–F1
 - Resolusi subdomain, `tenantDb` + RLS, test isolasi antar sekolah
@@ -31,8 +31,9 @@ Pemeriksaan: typecheck, lint, 172 test unit, 73 E2E (Playwright), dan `pnpm buil
 - Adapter storage `src/lib/storage` (driver `local` ke `.storage/`, `memory` untuk test; env `STORAGE_DRIVER`/`STORAGE_DIR`). Kunci file `schools/<school_id>/...`. Driver S3/R2 ditambahkan nanti tanpa mengubah pemanggil
 - OB-01 selesai: tabel `academic_years`, `semesters`, `majors`, `classrooms`, `subjects` (RLS, satu tahun/semester aktif per sekolah), service di `src/features/academic`, wizard `/setup` (profil+logo, tahun ajaran, jurusan khusus SMK, rombel, mapel) dan `GET /api/logo`. Admin sekolah yang `setup_completed_at`-nya kosong diarahkan ke `/setup`
 - OB-02 selesai: impor guru & siswa dari `.xlsx` (template diunduh dari `/impor`), tabel `teachers`, `students`, `enrollments`, `import_batches`, `import_errors` (RLS + index parsial unik kode guru/NIS), service + worker pg-boss di `src/features/people-import`, halaman `/impor`, route unduhan `/api/impor-template` dan `/api/laporan-impor/$batchId`
+- OB-03 selesai: tabel `courses` (kelas pembelajaran = rombel x mapel x guru x semester) + kolom `classrooms.homeroom_teacher_id` (RLS, indeks parsial unik), service + server function di `src/features/teaching-assignment`, halaman `/penugasan` (tabel kelas pembelajaran semester aktif, filter per rombel, form tambah, daftar wali kelas per rombel)
 - Server function sekolah memakai `schoolAdminMiddleware` (login, peran school_admin, tolak suspended/readonly)
-- Belum: wali kelas di rombel (OB-03), penugasan guru (OB-03), pergantian tahun ajaran (OB-04), kode undangan orang tua (OB-05), daftar/ubah data guru & siswa di UI (OB-02 baru impor), log audit (US-04)
+- Belum: pergantian tahun ajaran (OB-04), kode undangan orang tua (OB-05), daftar/ubah data guru & siswa di UI (OB-02 baru impor), log audit (US-04)
 - E2E mematikan devtools lewat `VITE_E2E`; matikan server dev manual sebelum `pnpm test:e2e` agar tidak dipakai ulang
 
 ## Akun dev
@@ -53,10 +54,15 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - Cache tenant 30 detik per proses; `invalidateTenantCache` dipanggil saat status berubah.
 - Worker pg-boss berjalan di dalam proses aplikasi; pisahkan ke proses worker saat deploy (F6).
 - Email dev memakai driver `console` (cetak + simpan ke `.email-outbox/`); penyedia nyata ditambahkan sebagai driver di `src/lib/email/index.ts`.
-- Dashboard platform di `/platform/*` pada host `app.localhost`; sekolah punya `/beranda` (placeholder) dan `/setup` (wizard OB-01).
+- Dashboard platform di `/platform/*` pada host `app.localhost`; sekolah punya `/beranda` (placeholder), `/setup` (wizard OB-01), `/impor` (OB-02), dan `/penugasan` (OB-03).
 - Server function sekolah memakai `schoolAdminMiddleware` (`src/features/auth/server/school-admin.ts`); tolak sekolah `suspended` dan `readonly`.
 - Penyimpanan file lewat `src/lib/storage` (driver `local` ke `.storage/`); kunci selalu `schools/<school_id>/...`.
-- Wali kelas di rombel (`homeroom_teacher_id`) sengaja belum ada; ditambahkan di OB-03 setelah tabel guru ada.
+- Wali kelas di rombel (`homeroom_teacher_id`) dan penugasan guru (OB-03) selesai; belum ada layar kelas untuk guru/siswa (F3)
+- `/penugasan` (OB-03) hanya menampilkan **semester aktif**; belum ada pemilih semester (kelas pembelajaran untuk semester lama hanya terlihat lewat data, belum ada UI)
+- OB-03: aturan "satu rombel satu mapel per semester" dan "satu guru satu wali rombel per semester" dijamin indeks unik parsial di migrasi (bukan hanya pengecekan di service), jadi tetap aman saat dua admin menyimpan bersamaan; `createCourse`/`setHomeroomTeacher` tetap menangkap P2002 lalu mengubahnya jadi pesan ramah
+- OB-03: halaman membaca satu "papan penugasan" (`getAssignmentBoard`) dalam SATU transaksi tenantDb — semester, rombel, mapel, guru, dan kelas pembelajaran selalu dari snapshot yang sama; filter per rombel dikerjakan di klien karena datanya satu semester
+- OB-03: `courses.semester_id` sebenarnya bisa diturunkan dari rombel, tapi tetap disimpan (PRD §7) dan dipakai service sebagai pemeriksaan integritas; `semesters` tidak punya `deleted_at`, jadi query semester tidak memfilter `deletedAt`
+- OB-03: Error memakai kode yang sama dengan modul lain: `INVALID | DUPLICATE | NOT_FOUND` di `TeachingError`
 - OB-02: impor memvalidasi tiap baris dan berhenti di batch yang gagal total (sheet/judul kolom salah, berkas rusak); baris cacat lain hanya jadi baris gagal, tidak membatalkan impor.
 - OB-02: baris duplikat (dalam berkas, huruf besar/kecil berbeda, atau sudah ada di sekolah) **ditolak**, bukan menimpa. Impor ulang setelah koreksi aman; konsekuensinya perbaikan data harus lewat modul lain (belum ada UI ubah).
 - OB-02: kolom `Kode guru` sengaja terpisah dari NIP/NUPTK karena guru honor belum tentu punya NIP; kode guru adalah kunci unik profil guru di sekolah.
@@ -71,7 +77,7 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 ## Utang / belum ada
 - Email pemberitahuan trial segera berakhir; penyedia email nyata (hanya driver `console`/`memory`)
 - UI daftar/ubah/hapus data guru & siswa (OB-02 baru mengimpor; belum ada layar daftar, pencarian, atau ubah data)
-- Wali kelas di rombel & penugasan guru (OB-03)
+- Pemilih semester di `/penugasan` (OB-03) — belum ada kelas pembelajaran untuk semester lampau
 - Kuota jumlah siswa per paket belum dicek saat impor (ikut dikerjakan di BL-01/F7)
 - Halaman masih: kolom Excel berisi rumus (`=...`) dibaca apa adanya sebagai teks, bukan hasil hitungan
 - UI tambah/cabut Super Admin; log audit (US-04)
@@ -88,6 +94,9 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - Aksi di form klien harus menunggu hydrate; di E2E pakai `expect(...).toPass()`.
 - Skema Zod dipakai klien lalu server, jadi harus idempoten (parse dua kali).
 - Migrasi baru harus bertimestamp setelah migrasi terakhir di `prisma/migrations/`. `prisma migrate dev` memakai jam sistem untuk nama folder, jadi cek dan rename bila perlu (jangan ubah migrasi yang sudah diterapkan).
+- `prisma migrate dev --create-only` + `Rename-Item` dipakai untuk OB-03 supaya SQL parsial (indeks unik parsial + policy RLS) bisa ditulis manual setelah Prisma membuat migration-nya; setelah itu `pnpm prisma migrate deploy`.
+- Query paralel (`Promise.all`) di dalam callback `tenantDb` memicu peringatan deprecation dari adapter `pg` ("client.query() when the client is already executing a query"). Prisma menjalankan query transaksi satu per satu, jadi tulis berurutan (lihat `getAssignmentBoard`).
+- `include` beberapa relasi sekaligus (mis. classroom+subject+teacher.user) di dalam `tenantDb` juga memicu peringatan itu; kalau tidak perlu, ambil id saja lalu susun nama di lapisan pemanggil.
 - E2E mematikan devtools lewat `VITE_E2E` (tombolnya menutupi tombol kanan-bawah di layar 360px). Server dev yang dijalankan manual dipakai ulang oleh Playwright dan menampilkan devtools, jadi matikan dulu.
 - Assertion E2E "bukan /login" terlalu lemah; pakai URL tujuan yang positif.
 - Fixture E2E yang membuat sekolah langsung harus mengisi `setupCompletedAt`, kalau tidak login diarahkan ke `/setup`. `prisma/seed.ts` juga sudah mengisi kolom itu untuk sekolah demo.

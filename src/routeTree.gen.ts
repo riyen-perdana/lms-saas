@@ -24,6 +24,7 @@ import { Route as marketingSyaratRouteImport } from './routes/(marketing)/syarat
 import { Route as platformPlatformRouteImport } from './routes/(platform)/platform'
 import { Route as schoolBerandaRouteImport } from './routes/(school)/beranda'
 import { Route as schoolImporRouteImport } from './routes/(school)/impor'
+import { Route as schoolPenugasanRouteImport } from './routes/(school)/penugasan'
 import { Route as schoolSetupRouteImport } from './routes/(school)/setup'
 import { Route as ApiImporTemplateRouteImport } from './routes/api/impor-template'
 import { Route as ApiLogoRouteImport } from './routes/api/logo'
@@ -109,6 +110,11 @@ const schoolImporRoute = schoolImporRouteImport.update({
   path: '/impor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const schoolPenugasanRoute = schoolPenugasanRouteImport.update({
+  id: '/(school)/penugasan',
+  path: '/penugasan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const schoolSetupRoute = schoolSetupRouteImport.update({
   id: '/(school)/setup',
   path: '/setup',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/platform': typeof platformPlatformRouteWithChildren
   '/beranda': typeof schoolBerandaRoute
   '/impor': typeof schoolImporRoute
+  '/penugasan': typeof schoolPenugasanRoute
   '/setup': typeof schoolSetupRoute
   '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/syarat': typeof marketingSyaratRoute
   '/beranda': typeof schoolBerandaRoute
   '/impor': typeof schoolImporRoute
+  '/penugasan': typeof schoolPenugasanRoute
   '/setup': typeof schoolSetupRoute
   '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/(platform)/platform': typeof platformPlatformRouteWithChildren
   '/(school)/beranda': typeof schoolBerandaRoute
   '/(school)/impor': typeof schoolImporRoute
+  '/(school)/penugasan': typeof schoolPenugasanRoute
   '/(school)/setup': typeof schoolSetupRoute
   '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/platform'
     | '/beranda'
     | '/impor'
+    | '/penugasan'
     | '/setup'
     | '/api/impor-template'
     | '/api/logo'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/syarat'
     | '/beranda'
     | '/impor'
+    | '/penugasan'
     | '/setup'
     | '/api/impor-template'
     | '/api/logo'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/(platform)/platform'
     | '/(school)/beranda'
     | '/(school)/impor'
+    | '/(school)/penugasan'
     | '/(school)/setup'
     | '/api/impor-template'
     | '/api/logo'
@@ -330,6 +342,7 @@ export interface RootRouteChildren {
   platformPlatformRoute: typeof platformPlatformRouteWithChildren
   schoolBerandaRoute: typeof schoolBerandaRoute
   schoolImporRoute: typeof schoolImporRoute
+  schoolPenugasanRoute: typeof schoolPenugasanRoute
   schoolSetupRoute: typeof schoolSetupRoute
   ApiImporTemplateRoute: typeof ApiImporTemplateRoute
   ApiLogoRoute: typeof ApiLogoRoute
@@ -446,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof schoolImporRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(school)/penugasan': {
+      id: '/(school)/penugasan'
+      path: '/penugasan'
+      fullPath: '/penugasan'
+      preLoaderRoute: typeof schoolPenugasanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(school)/setup': {
       id: '/(school)/setup'
       path: '/setup'
@@ -542,6 +562,7 @@ const rootRouteChildren: RootRouteChildren = {
   platformPlatformRoute: platformPlatformRouteWithChildren,
   schoolBerandaRoute: schoolBerandaRoute,
   schoolImporRoute: schoolImporRoute,
+  schoolPenugasanRoute: schoolPenugasanRoute,
   schoolSetupRoute: schoolSetupRoute,
   ApiImporTemplateRoute: ApiImporTemplateRoute,
   ApiLogoRoute: ApiLogoRoute,

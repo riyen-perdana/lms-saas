@@ -65,12 +65,18 @@ function SchoolHome() {
         Dashboard sekolah sedang dikembangkan. Kelas, materi, tugas, dan ujian
         akan tersedia di sini pada tahap berikutnya.
       </p>
-      <div>
+      <div className="flex flex-col gap-2">
         <Link
           to="/impor"
           className="text-ds-body text-primary underline-offset-4 hover:underline"
         >
           Impor guru dan siswa dari Excel
+        </Link>
+        <Link
+          to="/penugasan"
+          className="text-ds-body text-primary underline-offset-4 hover:underline"
+        >
+          Penugasan guru dan wali kelas
         </Link>
       </div>
     </main>
