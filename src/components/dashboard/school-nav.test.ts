@@ -10,7 +10,7 @@ describe("navForRole", () => {
     expect(labels("school_admin")).toEqual([
       ["Utama", ["Beranda"]],
       ["Akademik", ["Tahun Ajaran", "Penugasan"]],
-      ["Data", ["Impor Data", "Orang Tua"]],
+      ["Data", ["Pengguna", "Impor Data", "Orang Tua"]],
       ["Sistem", ["Audit"]],
     ])
   })

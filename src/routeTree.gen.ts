@@ -33,6 +33,7 @@ import { Route as schoolAppAuditRouteImport } from './routes/(school)/_app.audit
 import { Route as schoolAppBerandaRouteImport } from './routes/(school)/_app.beranda'
 import { Route as schoolAppImporRouteImport } from './routes/(school)/_app.impor'
 import { Route as schoolAppOrangTuaRouteImport } from './routes/(school)/_app.orang-tua'
+import { Route as schoolAppPenggunaRouteImport } from './routes/(school)/_app.pengguna'
 import { Route as schoolAppPenugasanRouteImport } from './routes/(school)/_app.penugasan'
 import { Route as schoolAppTahunAjaranRouteImport } from './routes/(school)/_app.tahun-ajaran'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -159,6 +160,11 @@ const schoolAppOrangTuaRoute = schoolAppOrangTuaRouteImport.update({
   path: '/orang-tua',
   getParentRoute: () => schoolAppRoute,
 } as any)
+const schoolAppPenggunaRoute = schoolAppPenggunaRouteImport.update({
+  id: '/pengguna',
+  path: '/pengguna',
+  getParentRoute: () => schoolAppRoute,
+} as any)
 const schoolAppPenugasanRoute = schoolAppPenugasanRouteImport.update({
   id: '/penugasan',
   path: '/penugasan',
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/beranda': typeof schoolAppBerandaRoute
   '/impor': typeof schoolAppImporRoute
   '/orang-tua': typeof schoolAppOrangTuaRoute
+  '/pengguna': typeof schoolAppPenggunaRoute
   '/penugasan': typeof schoolAppPenugasanRoute
   '/tahun-ajaran': typeof schoolAppTahunAjaranRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -245,6 +252,7 @@ export interface FileRoutesByTo {
   '/beranda': typeof schoolAppBerandaRoute
   '/impor': typeof schoolAppImporRoute
   '/orang-tua': typeof schoolAppOrangTuaRoute
+  '/pengguna': typeof schoolAppPenggunaRoute
   '/penugasan': typeof schoolAppPenugasanRoute
   '/tahun-ajaran': typeof schoolAppTahunAjaranRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -278,6 +286,7 @@ export interface FileRoutesById {
   '/(school)/_app/beranda': typeof schoolAppBerandaRoute
   '/(school)/_app/impor': typeof schoolAppImporRoute
   '/(school)/_app/orang-tua': typeof schoolAppOrangTuaRoute
+  '/(school)/_app/pengguna': typeof schoolAppPenggunaRoute
   '/(school)/_app/penugasan': typeof schoolAppPenugasanRoute
   '/(school)/_app/tahun-ajaran': typeof schoolAppTahunAjaranRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
@@ -311,6 +320,7 @@ export interface FileRouteTypes {
     | '/beranda'
     | '/impor'
     | '/orang-tua'
+    | '/pengguna'
     | '/penugasan'
     | '/tahun-ajaran'
     | '/api/auth/$'
@@ -341,6 +351,7 @@ export interface FileRouteTypes {
     | '/beranda'
     | '/impor'
     | '/orang-tua'
+    | '/pengguna'
     | '/penugasan'
     | '/tahun-ajaran'
     | '/api/auth/$'
@@ -373,6 +384,7 @@ export interface FileRouteTypes {
     | '/(school)/_app/beranda'
     | '/(school)/_app/impor'
     | '/(school)/_app/orang-tua'
+    | '/(school)/_app/pengguna'
     | '/(school)/_app/penugasan'
     | '/(school)/_app/tahun-ajaran'
     | '/api/auth/$'
@@ -576,6 +588,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof schoolAppOrangTuaRouteImport
       parentRoute: typeof schoolAppRoute
     }
+    '/(school)/_app/pengguna': {
+      id: '/(school)/_app/pengguna'
+      path: '/pengguna'
+      fullPath: '/pengguna'
+      preLoaderRoute: typeof schoolAppPenggunaRouteImport
+      parentRoute: typeof schoolAppRoute
+    }
     '/(school)/_app/penugasan': {
       id: '/(school)/_app/penugasan'
       path: '/penugasan'
@@ -641,6 +660,7 @@ interface schoolAppRouteChildren {
   schoolAppBerandaRoute: typeof schoolAppBerandaRoute
   schoolAppImporRoute: typeof schoolAppImporRoute
   schoolAppOrangTuaRoute: typeof schoolAppOrangTuaRoute
+  schoolAppPenggunaRoute: typeof schoolAppPenggunaRoute
   schoolAppPenugasanRoute: typeof schoolAppPenugasanRoute
   schoolAppTahunAjaranRoute: typeof schoolAppTahunAjaranRoute
 }
@@ -650,6 +670,7 @@ const schoolAppRouteChildren: schoolAppRouteChildren = {
   schoolAppBerandaRoute: schoolAppBerandaRoute,
   schoolAppImporRoute: schoolAppImporRoute,
   schoolAppOrangTuaRoute: schoolAppOrangTuaRoute,
+  schoolAppPenggunaRoute: schoolAppPenggunaRoute,
   schoolAppPenugasanRoute: schoolAppPenugasanRoute,
   schoolAppTahunAjaranRoute: schoolAppTahunAjaranRoute,
 }

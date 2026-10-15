@@ -21,6 +21,7 @@ import type { Gender, ImportKind } from "@/generated/prisma/enums"
 import { recordAudit, type AuditActor } from "@/features/audit/service"
 import { auth } from "@/lib/auth"
 import { enqueueImportBatch } from "@/lib/jobs"
+import { schoolHost } from "@/lib/tenant/host"
 import { deleteFile, getFile, putFile, schoolKey } from "@/lib/storage"
 import { uuidv7 } from "@/lib/uuid"
 
@@ -204,11 +205,6 @@ function columnNameFor(kind: ImportKind, key: string): string {
 /** Email siswa tidak pernah dikirim; pakai domain `.invalid` (RFC 2606) yang tidak bisa dirutekan. */
 function studentEmail(slug: string, nis: string): string {
   return `${nis}@${slug}.invalid`
-}
-
-function schoolHost(slug: string): string {
-  const domain = process.env.APP_DOMAIN
-  return domain ? `${slug}.${domain}` : `${slug}.localhost:3000`
 }
 
 async function hashInBatches(passwords: string[]): Promise<string[]> {

@@ -8,6 +8,7 @@ import {
   ScrollText,
   UserCog,
   Users,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react"
 
@@ -15,6 +16,7 @@ export type SchoolPath =
   | "/beranda"
   | "/tahun-ajaran"
   | "/penugasan"
+  | "/pengguna"
   | "/impor"
   | "/orang-tua"
   | "/audit"
@@ -55,6 +57,7 @@ const ADMIN: NavGroup[] = [
   {
     label: "Data",
     items: [
+      { to: "/pengguna", label: "Pengguna", icon: UsersRound },
       { to: "/impor", label: "Impor Data", icon: FileSpreadsheet },
       { to: "/orang-tua", label: "Orang Tua", icon: Users },
     ],

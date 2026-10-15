@@ -86,3 +86,9 @@ export function schoolBaseUrl(
 
   return `${isLocalDev ? "http" : "https"}://${slug}.${root}`
 }
+
+/** Host publik sebuah sekolah, dipakai untuk membangun tautan di email. */
+export function schoolHost(slug: string): string {
+  const domain = process.env.APP_DOMAIN
+  return domain ? `${slug}.${domain}` : `${slug}.localhost:3000`
+}

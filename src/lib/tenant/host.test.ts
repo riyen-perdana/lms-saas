@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 
-import { isValidSlug, parseHost, schoolBaseUrl } from "@/lib/tenant/host"
+import { isValidSlug, parseHost, schoolBaseUrl, schoolHost } from "@/lib/tenant/host"
 
 describe("parseHost", () => {
   it("menandai apex dan www sebagai marketing", () => {
@@ -108,5 +108,23 @@ describe("schoolBaseUrl", () => {
     expect(schoolBaseUrl("app.localhost:3000", "man3pku")).toBe(
       "http://man3pku.localhost:3000"
     )
+  })
+})
+
+describe("schoolHost", () => {
+  const original = process.env.APP_DOMAIN
+  afterEach(() => {
+    if (original === undefined) delete process.env.APP_DOMAIN
+    else process.env.APP_DOMAIN = original
+  })
+
+  it("memakai localhost:3000 bila APP_DOMAIN kosong", () => {
+    delete process.env.APP_DOMAIN
+    expect(schoolHost("man3pku")).toBe("man3pku.localhost:3000")
+  })
+
+  it("memakai APP_DOMAIN bila diisi", () => {
+    process.env.APP_DOMAIN = "edusaas.id"
+    expect(schoolHost("man3pku")).toBe("man3pku.edusaas.id")
   })
 })
