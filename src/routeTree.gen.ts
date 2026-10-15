@@ -22,18 +22,19 @@ import { Route as marketingKontakRouteImport } from './routes/(marketing)/kontak
 import { Route as marketingPrivasiRouteImport } from './routes/(marketing)/privasi'
 import { Route as marketingSyaratRouteImport } from './routes/(marketing)/syarat'
 import { Route as platformPlatformRouteImport } from './routes/(platform)/platform'
-import { Route as schoolAuditRouteImport } from './routes/(school)/audit'
-import { Route as schoolBerandaRouteImport } from './routes/(school)/beranda'
+import { Route as schoolAppRouteImport } from './routes/(school)/_app'
 import { Route as schoolGabungRouteImport } from './routes/(school)/gabung'
-import { Route as schoolImporRouteImport } from './routes/(school)/impor'
-import { Route as schoolOrangTuaRouteImport } from './routes/(school)/orang-tua'
-import { Route as schoolPenugasanRouteImport } from './routes/(school)/penugasan'
 import { Route as schoolSetupRouteImport } from './routes/(school)/setup'
-import { Route as schoolTahunAjaranRouteImport } from './routes/(school)/tahun-ajaran'
 import { Route as ApiImporTemplateRouteImport } from './routes/api/impor-template'
 import { Route as ApiLogoRouteImport } from './routes/api/logo'
 import { Route as ApiTenantRouteImport } from './routes/api/tenant'
 import { Route as platformPlatformIndexRouteImport } from './routes/(platform)/platform.index'
+import { Route as schoolAppAuditRouteImport } from './routes/(school)/_app.audit'
+import { Route as schoolAppBerandaRouteImport } from './routes/(school)/_app.beranda'
+import { Route as schoolAppImporRouteImport } from './routes/(school)/_app.impor'
+import { Route as schoolAppOrangTuaRouteImport } from './routes/(school)/_app.orang-tua'
+import { Route as schoolAppPenugasanRouteImport } from './routes/(school)/_app.penugasan'
+import { Route as schoolAppTahunAjaranRouteImport } from './routes/(school)/_app.tahun-ajaran'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiLaporanImporBatchIdRouteImport } from './routes/api/laporan-impor.$batchId'
 import { Route as platformPlatformSekolahIndexRouteImport } from './routes/(platform)/platform.sekolah.index'
@@ -104,14 +105,8 @@ const platformPlatformRoute = platformPlatformRouteImport.update({
   path: '/platform',
   getParentRoute: () => rootRouteImport,
 } as any)
-const schoolAuditRoute = schoolAuditRouteImport.update({
-  id: '/(school)/audit',
-  path: '/audit',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const schoolBerandaRoute = schoolBerandaRouteImport.update({
-  id: '/(school)/beranda',
-  path: '/beranda',
+const schoolAppRoute = schoolAppRouteImport.update({
+  id: '/(school)/_app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const schoolGabungRoute = schoolGabungRouteImport.update({
@@ -119,29 +114,9 @@ const schoolGabungRoute = schoolGabungRouteImport.update({
   path: '/gabung',
   getParentRoute: () => rootRouteImport,
 } as any)
-const schoolImporRoute = schoolImporRouteImport.update({
-  id: '/(school)/impor',
-  path: '/impor',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const schoolOrangTuaRoute = schoolOrangTuaRouteImport.update({
-  id: '/(school)/orang-tua',
-  path: '/orang-tua',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const schoolPenugasanRoute = schoolPenugasanRouteImport.update({
-  id: '/(school)/penugasan',
-  path: '/penugasan',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const schoolSetupRoute = schoolSetupRouteImport.update({
   id: '/(school)/setup',
   path: '/setup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const schoolTahunAjaranRoute = schoolTahunAjaranRouteImport.update({
-  id: '/(school)/tahun-ajaran',
-  path: '/tahun-ajaran',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiImporTemplateRoute = ApiImporTemplateRouteImport.update({
@@ -163,6 +138,36 @@ const platformPlatformIndexRoute = platformPlatformIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => platformPlatformRoute,
+} as any)
+const schoolAppAuditRoute = schoolAppAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => schoolAppRoute,
+} as any)
+const schoolAppBerandaRoute = schoolAppBerandaRouteImport.update({
+  id: '/beranda',
+  path: '/beranda',
+  getParentRoute: () => schoolAppRoute,
+} as any)
+const schoolAppImporRoute = schoolAppImporRouteImport.update({
+  id: '/impor',
+  path: '/impor',
+  getParentRoute: () => schoolAppRoute,
+} as any)
+const schoolAppOrangTuaRoute = schoolAppOrangTuaRouteImport.update({
+  id: '/orang-tua',
+  path: '/orang-tua',
+  getParentRoute: () => schoolAppRoute,
+} as any)
+const schoolAppPenugasanRoute = schoolAppPenugasanRouteImport.update({
+  id: '/penugasan',
+  path: '/penugasan',
+  getParentRoute: () => schoolAppRoute,
+} as any)
+const schoolAppTahunAjaranRoute = schoolAppTahunAjaranRouteImport.update({
+  id: '/tahun-ajaran',
+  path: '/tahun-ajaran',
+  getParentRoute: () => schoolAppRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
@@ -200,18 +205,18 @@ export interface FileRoutesByFullPath {
   '/privasi': typeof marketingPrivasiRoute
   '/syarat': typeof marketingSyaratRoute
   '/platform': typeof platformPlatformRouteWithChildren
-  '/audit': typeof schoolAuditRoute
-  '/beranda': typeof schoolBerandaRoute
   '/gabung': typeof schoolGabungRoute
-  '/impor': typeof schoolImporRoute
-  '/orang-tua': typeof schoolOrangTuaRoute
-  '/penugasan': typeof schoolPenugasanRoute
   '/setup': typeof schoolSetupRoute
-  '/tahun-ajaran': typeof schoolTahunAjaranRoute
   '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
+  '/audit': typeof schoolAppAuditRoute
+  '/beranda': typeof schoolAppBerandaRoute
+  '/impor': typeof schoolAppImporRoute
+  '/orang-tua': typeof schoolAppOrangTuaRoute
+  '/penugasan': typeof schoolAppPenugasanRoute
+  '/tahun-ajaran': typeof schoolAppTahunAjaranRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/laporan-impor/$batchId': typeof ApiLaporanImporBatchIdRoute
   '/platform/': typeof platformPlatformIndexRoute
@@ -230,18 +235,18 @@ export interface FileRoutesByTo {
   '/kontak': typeof marketingKontakRoute
   '/privasi': typeof marketingPrivasiRoute
   '/syarat': typeof marketingSyaratRoute
-  '/audit': typeof schoolAuditRoute
-  '/beranda': typeof schoolBerandaRoute
   '/gabung': typeof schoolGabungRoute
-  '/impor': typeof schoolImporRoute
-  '/orang-tua': typeof schoolOrangTuaRoute
-  '/penugasan': typeof schoolPenugasanRoute
   '/setup': typeof schoolSetupRoute
-  '/tahun-ajaran': typeof schoolTahunAjaranRoute
   '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
+  '/audit': typeof schoolAppAuditRoute
+  '/beranda': typeof schoolAppBerandaRoute
+  '/impor': typeof schoolAppImporRoute
+  '/orang-tua': typeof schoolAppOrangTuaRoute
+  '/penugasan': typeof schoolAppPenugasanRoute
+  '/tahun-ajaran': typeof schoolAppTahunAjaranRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/laporan-impor/$batchId': typeof ApiLaporanImporBatchIdRoute
   '/platform': typeof platformPlatformIndexRoute
@@ -262,18 +267,19 @@ export interface FileRoutesById {
   '/(marketing)/privasi': typeof marketingPrivasiRoute
   '/(marketing)/syarat': typeof marketingSyaratRoute
   '/(platform)/platform': typeof platformPlatformRouteWithChildren
-  '/(school)/audit': typeof schoolAuditRoute
-  '/(school)/beranda': typeof schoolBerandaRoute
+  '/(school)/_app': typeof schoolAppRouteWithChildren
   '/(school)/gabung': typeof schoolGabungRoute
-  '/(school)/impor': typeof schoolImporRoute
-  '/(school)/orang-tua': typeof schoolOrangTuaRoute
-  '/(school)/penugasan': typeof schoolPenugasanRoute
   '/(school)/setup': typeof schoolSetupRoute
-  '/(school)/tahun-ajaran': typeof schoolTahunAjaranRoute
   '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
   '/(marketing)/': typeof marketingIndexRoute
+  '/(school)/_app/audit': typeof schoolAppAuditRoute
+  '/(school)/_app/beranda': typeof schoolAppBerandaRoute
+  '/(school)/_app/impor': typeof schoolAppImporRoute
+  '/(school)/_app/orang-tua': typeof schoolAppOrangTuaRoute
+  '/(school)/_app/penugasan': typeof schoolAppPenugasanRoute
+  '/(school)/_app/tahun-ajaran': typeof schoolAppTahunAjaranRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/laporan-impor/$batchId': typeof ApiLaporanImporBatchIdRoute
   '/(platform)/platform/': typeof platformPlatformIndexRoute
@@ -295,18 +301,18 @@ export interface FileRouteTypes {
     | '/privasi'
     | '/syarat'
     | '/platform'
-    | '/audit'
-    | '/beranda'
     | '/gabung'
-    | '/impor'
-    | '/orang-tua'
-    | '/penugasan'
     | '/setup'
-    | '/tahun-ajaran'
     | '/api/impor-template'
     | '/api/logo'
     | '/api/tenant'
     | '/'
+    | '/audit'
+    | '/beranda'
+    | '/impor'
+    | '/orang-tua'
+    | '/penugasan'
+    | '/tahun-ajaran'
     | '/api/auth/$'
     | '/api/laporan-impor/$batchId'
     | '/platform/'
@@ -325,18 +331,18 @@ export interface FileRouteTypes {
     | '/kontak'
     | '/privasi'
     | '/syarat'
-    | '/audit'
-    | '/beranda'
     | '/gabung'
-    | '/impor'
-    | '/orang-tua'
-    | '/penugasan'
     | '/setup'
-    | '/tahun-ajaran'
     | '/api/impor-template'
     | '/api/logo'
     | '/api/tenant'
     | '/'
+    | '/audit'
+    | '/beranda'
+    | '/impor'
+    | '/orang-tua'
+    | '/penugasan'
+    | '/tahun-ajaran'
     | '/api/auth/$'
     | '/api/laporan-impor/$batchId'
     | '/platform'
@@ -356,18 +362,19 @@ export interface FileRouteTypes {
     | '/(marketing)/privasi'
     | '/(marketing)/syarat'
     | '/(platform)/platform'
-    | '/(school)/audit'
-    | '/(school)/beranda'
+    | '/(school)/_app'
     | '/(school)/gabung'
-    | '/(school)/impor'
-    | '/(school)/orang-tua'
-    | '/(school)/penugasan'
     | '/(school)/setup'
-    | '/(school)/tahun-ajaran'
     | '/api/impor-template'
     | '/api/logo'
     | '/api/tenant'
     | '/(marketing)/'
+    | '/(school)/_app/audit'
+    | '/(school)/_app/beranda'
+    | '/(school)/_app/impor'
+    | '/(school)/_app/orang-tua'
+    | '/(school)/_app/penugasan'
+    | '/(school)/_app/tahun-ajaran'
     | '/api/auth/$'
     | '/api/laporan-impor/$batchId'
     | '/(platform)/platform/'
@@ -388,14 +395,9 @@ export interface RootRouteChildren {
   marketingPrivasiRoute: typeof marketingPrivasiRoute
   marketingSyaratRoute: typeof marketingSyaratRoute
   platformPlatformRoute: typeof platformPlatformRouteWithChildren
-  schoolAuditRoute: typeof schoolAuditRoute
-  schoolBerandaRoute: typeof schoolBerandaRoute
+  schoolAppRoute: typeof schoolAppRouteWithChildren
   schoolGabungRoute: typeof schoolGabungRoute
-  schoolImporRoute: typeof schoolImporRoute
-  schoolOrangTuaRoute: typeof schoolOrangTuaRoute
-  schoolPenugasanRoute: typeof schoolPenugasanRoute
   schoolSetupRoute: typeof schoolSetupRoute
-  schoolTahunAjaranRoute: typeof schoolTahunAjaranRoute
   ApiImporTemplateRoute: typeof ApiImporTemplateRoute
   ApiLogoRoute: typeof ApiLogoRoute
   ApiTenantRoute: typeof ApiTenantRoute
@@ -497,18 +499,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof platformPlatformRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(school)/audit': {
-      id: '/(school)/audit'
-      path: '/audit'
-      fullPath: '/audit'
-      preLoaderRoute: typeof schoolAuditRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(school)/beranda': {
-      id: '/(school)/beranda'
-      path: '/beranda'
-      fullPath: '/beranda'
-      preLoaderRoute: typeof schoolBerandaRouteImport
+    '/(school)/_app': {
+      id: '/(school)/_app'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof schoolAppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(school)/gabung': {
@@ -518,39 +513,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof schoolGabungRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/(school)/impor': {
-      id: '/(school)/impor'
-      path: '/impor'
-      fullPath: '/impor'
-      preLoaderRoute: typeof schoolImporRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(school)/orang-tua': {
-      id: '/(school)/orang-tua'
-      path: '/orang-tua'
-      fullPath: '/orang-tua'
-      preLoaderRoute: typeof schoolOrangTuaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(school)/penugasan': {
-      id: '/(school)/penugasan'
-      path: '/penugasan'
-      fullPath: '/penugasan'
-      preLoaderRoute: typeof schoolPenugasanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/(school)/setup': {
       id: '/(school)/setup'
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof schoolSetupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(school)/tahun-ajaran': {
-      id: '/(school)/tahun-ajaran'
-      path: '/tahun-ajaran'
-      fullPath: '/tahun-ajaran'
-      preLoaderRoute: typeof schoolTahunAjaranRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/impor-template': {
@@ -580,6 +547,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/platform/'
       preLoaderRoute: typeof platformPlatformIndexRouteImport
       parentRoute: typeof platformPlatformRoute
+    }
+    '/(school)/_app/audit': {
+      id: '/(school)/_app/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof schoolAppAuditRouteImport
+      parentRoute: typeof schoolAppRoute
+    }
+    '/(school)/_app/beranda': {
+      id: '/(school)/_app/beranda'
+      path: '/beranda'
+      fullPath: '/beranda'
+      preLoaderRoute: typeof schoolAppBerandaRouteImport
+      parentRoute: typeof schoolAppRoute
+    }
+    '/(school)/_app/impor': {
+      id: '/(school)/_app/impor'
+      path: '/impor'
+      fullPath: '/impor'
+      preLoaderRoute: typeof schoolAppImporRouteImport
+      parentRoute: typeof schoolAppRoute
+    }
+    '/(school)/_app/orang-tua': {
+      id: '/(school)/_app/orang-tua'
+      path: '/orang-tua'
+      fullPath: '/orang-tua'
+      preLoaderRoute: typeof schoolAppOrangTuaRouteImport
+      parentRoute: typeof schoolAppRoute
+    }
+    '/(school)/_app/penugasan': {
+      id: '/(school)/_app/penugasan'
+      path: '/penugasan'
+      fullPath: '/penugasan'
+      preLoaderRoute: typeof schoolAppPenugasanRouteImport
+      parentRoute: typeof schoolAppRoute
+    }
+    '/(school)/_app/tahun-ajaran': {
+      id: '/(school)/_app/tahun-ajaran'
+      path: '/tahun-ajaran'
+      fullPath: '/tahun-ajaran'
+      preLoaderRoute: typeof schoolAppTahunAjaranRouteImport
+      parentRoute: typeof schoolAppRoute
     }
     '/api/auth/$': {
       id: '/api/auth/$'
@@ -627,6 +636,28 @@ const platformPlatformRouteChildren: platformPlatformRouteChildren = {
 const platformPlatformRouteWithChildren =
   platformPlatformRoute._addFileChildren(platformPlatformRouteChildren)
 
+interface schoolAppRouteChildren {
+  schoolAppAuditRoute: typeof schoolAppAuditRoute
+  schoolAppBerandaRoute: typeof schoolAppBerandaRoute
+  schoolAppImporRoute: typeof schoolAppImporRoute
+  schoolAppOrangTuaRoute: typeof schoolAppOrangTuaRoute
+  schoolAppPenugasanRoute: typeof schoolAppPenugasanRoute
+  schoolAppTahunAjaranRoute: typeof schoolAppTahunAjaranRoute
+}
+
+const schoolAppRouteChildren: schoolAppRouteChildren = {
+  schoolAppAuditRoute: schoolAppAuditRoute,
+  schoolAppBerandaRoute: schoolAppBerandaRoute,
+  schoolAppImporRoute: schoolAppImporRoute,
+  schoolAppOrangTuaRoute: schoolAppOrangTuaRoute,
+  schoolAppPenugasanRoute: schoolAppPenugasanRoute,
+  schoolAppTahunAjaranRoute: schoolAppTahunAjaranRoute,
+}
+
+const schoolAppRouteWithChildren = schoolAppRoute._addFileChildren(
+  schoolAppRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AturUlangSandiRoute: AturUlangSandiRoute,
   LoginRoute: LoginRoute,
@@ -640,14 +671,9 @@ const rootRouteChildren: RootRouteChildren = {
   marketingPrivasiRoute: marketingPrivasiRoute,
   marketingSyaratRoute: marketingSyaratRoute,
   platformPlatformRoute: platformPlatformRouteWithChildren,
-  schoolAuditRoute: schoolAuditRoute,
-  schoolBerandaRoute: schoolBerandaRoute,
+  schoolAppRoute: schoolAppRouteWithChildren,
   schoolGabungRoute: schoolGabungRoute,
-  schoolImporRoute: schoolImporRoute,
-  schoolOrangTuaRoute: schoolOrangTuaRoute,
-  schoolPenugasanRoute: schoolPenugasanRoute,
   schoolSetupRoute: schoolSetupRoute,
-  schoolTahunAjaranRoute: schoolTahunAjaranRoute,
   ApiImporTemplateRoute: ApiImporTemplateRoute,
   ApiLogoRoute: ApiLogoRoute,
   ApiTenantRoute: ApiTenantRoute,

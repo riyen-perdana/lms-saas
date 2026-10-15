@@ -3,17 +3,12 @@
 
 import { createFileRoute, redirect } from "@tanstack/react-router"
 
-import { getAccess } from "@/features/auth/server/access"
 import { ImportPage } from "@/features/people-import/components/import-page"
 import { listImportBatchesFn } from "@/features/people-import/server/import"
 
-export const Route = createFileRoute("/(school)/impor")({
-  beforeLoad: async () => {
-    const { area, access } = await getAccess()
-
-    if (area !== "school") throw redirect({ to: "/" })
-    if (access.status !== "ok") throw redirect({ to: "/login" })
-    if (access.role !== "school_admin") throw redirect({ to: "/beranda" })
+export const Route = createFileRoute("/(school)/_app/impor")({
+  beforeLoad: ({ context }) => {
+    if (context.role !== "school_admin") throw redirect({ to: "/beranda" })
   },
   loader: async () => ({ batches: await listImportBatchesFn() }),
   head: () => ({ meta: [{ title: "Impor data — EduSaaS" }] }),
