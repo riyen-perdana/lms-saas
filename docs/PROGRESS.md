@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
 Terakhir diperbarui: 2026-10-15
-Pemeriksaan: typecheck, lint (2 warning lama di `ui/sidebar.tsx`), dan 308 test unit hijau. E2E (Playwright): 97 lulus, 1 skipped, 2 gagal — keduanya `platform.spec.ts > Super Admin melihat ringkasan dan daftar sekolah` (chromium + mobile-360), bukan dari US-02: heading "Ringkasan" hilang sejak commit `8ab9505` (dashboard platform gaya SKPI), spec belum disesuaikan. `pnpm build` tidak dijalankan pada pemeriksaan ini.
+Pemeriksaan: typecheck, lint (2 warning lama di `ui/sidebar.tsx`), dan 308 test unit hijau. E2E (Playwright): 99 lulus, 1 skipped, 0 gagal. Dua E2E `platform.spec.ts > Super Admin melihat ringkasan dan daftar sekolah` yang merah sejak commit `8ab9505` (dashboard platform gaya SKPI) diperbaiki: spec disesuaikan dengan judul sapaan dan sidebar mobile, serta layout platform kini menutup sheet sidebar mobile saat menu dipilih (sama seperti shell sekolah). `pnpm build` tidak dijalankan pada pemeriksaan ini.
 
 ## Status per fase (PRD §10)
 

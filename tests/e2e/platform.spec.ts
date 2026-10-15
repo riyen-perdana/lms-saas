@@ -56,13 +56,24 @@ test("host sekolah tidak bisa membuka dashboard platform", async ({ page }) => {
   await expect(page).not.toHaveURL(/\/platform/)
 })
 
-test("Super Admin melihat ringkasan dan daftar sekolah", async ({ page }) => {
+test("Super Admin melihat ringkasan dan daftar sekolah", async ({
+  page,
+}, testInfo) => {
   await login(page, SUPER_ADMIN)
 
   await expect(page).toHaveURL(/\/platform$/)
-  await expect(page.getByRole("heading", { name: "Ringkasan" })).toBeVisible()
+  // Judul beranda platform berupa sapaan (sesuai jam WIB) + nama Super Admin.
+  await expect(
+    page.getByRole("heading", {
+      name: /^Selamat (pagi|siang|sore|malam), Super Admin EduSaaS$/,
+    })
+  ).toBeVisible()
   await expect(page.getByText("Total sekolah")).toBeVisible()
 
+  // Di layar 360 px sidebar menjadi sheet tertutup; buka dulu.
+  if (testInfo.project.name === "mobile-360") {
+    await page.getByRole("button", { name: "Buka/tutup sidebar" }).click()
+  }
   await page.getByRole("link", { name: "Sekolah", exact: true }).click()
   await expect(page).toHaveURL(/\/platform\/sekolah/)
   await expect(

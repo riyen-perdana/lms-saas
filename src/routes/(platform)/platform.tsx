@@ -48,6 +48,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { getAccess } from "@/features/auth/server/access"
 import { signOut } from "@/lib/auth-client"
@@ -80,6 +81,26 @@ const NAV_GROUPS = [
     ],
   },
 ] as const
+
+type NavEntry = (typeof NAV_GROUPS)[number]["items"][number]
+
+// Item menu: menutup sheet sidebar mobile saat dipilih (SidebarProvider tetap
+// hidup antar navigasi, jadi sheet tidak menutup sendiri).
+function NavItem({ item, active }: { item: NavEntry; active: boolean }) {
+  const { setOpenMobile } = useSidebar()
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        isActive={active}
+        render={<Link to={item.to} />}
+        onClick={() => setOpenMobile(false)}
+      >
+        <item.icon aria-hidden />
+        <span>{item.label}</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  )
+}
 
 function PlatformLayout() {
   const { admin } = Route.useRouteContext()
@@ -125,15 +146,11 @@ function PlatformLayout() {
               <SidebarGroupContent>
                 <SidebarMenu>
                   {group.items.map((item) => (
-                    <SidebarMenuItem key={item.to}>
-                      <SidebarMenuButton
-                        isActive={isActive(item.to, item.exact)}
-                        render={<Link to={item.to} />}
-                      >
-                        <item.icon aria-hidden />
-                        <span>{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    <NavItem
+                      key={item.to}
+                      item={item}
+                      active={isActive(item.to, item.exact)}
+                    />
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>
