@@ -61,3 +61,4 @@ npx shadcn@latest init --preset b1GKyb59c --template start
 8. Selesai = typecheck, lint, dan test hijau.
 9. Kerjakan hanya kode kebutuhan yang diminta; jangan menyentuh modul lain.
 10. Modul pembayaran (BL-*) dikerjakan paling akhir; sebelum itu paket diaktifkan manual oleh Super Admin.
+11. Jangan menyembunyikan error atau kegagalan. Test merah, peringatan, atau perintah yang gagal wajib dilaporkan apa adanya (nama test, pesan, penyebab) dan segera diperbaiki, termasuk yang sudah gagal sebelum pekerjaan ini dimulai. Jangan menandai selesai, menggeser ke "utang", melemahkan assertion, atau melewati test demi membuatnya hijau. Bila akar masalahnya di luar cakupan kode kebutuhan yang diminta, hentikan dan laporkan, lalu tanyakan sebelum lanjut; jangan didiamkan.
