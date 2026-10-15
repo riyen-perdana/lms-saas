@@ -78,6 +78,12 @@ function SchoolHome() {
         >
           Penugasan guru dan wali kelas
         </Link>
+        <Link
+          to="/tahun-ajaran"
+          className="text-ds-body text-primary underline-offset-4 hover:underline"
+        >
+          Tahun ajaran dan kenaikan kelas
+        </Link>
       </div>
     </main>
   )

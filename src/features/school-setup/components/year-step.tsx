@@ -32,15 +32,19 @@ type Errors = Partial<Record<string, string>>
 export function YearStep({
   years,
   onChanged,
+  showList = true,
+  suggestion = suggestYear(),
 }: {
   years: YearRow[]
   onChanged: () => Promise<void>
+  /** false: selalu tampilkan form (penambahan tahun ajaran berikutnya, OB-04). */
+  showList?: boolean
+  suggestion?: ReturnType<typeof suggestYear>
 }) {
   const ready = useHydrated()
   const [errors, setErrors] = useState<Errors>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
-  const suggestion = suggestYear()
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -78,7 +82,7 @@ export function YearStep({
     }
   }
 
-  if (years.length > 0) {
+  if (showList && years.length > 0) {
     return (
       <div className="flex flex-col gap-3">
         {years.map((year) => (

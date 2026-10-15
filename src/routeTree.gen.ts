@@ -26,6 +26,7 @@ import { Route as schoolBerandaRouteImport } from './routes/(school)/beranda'
 import { Route as schoolImporRouteImport } from './routes/(school)/impor'
 import { Route as schoolPenugasanRouteImport } from './routes/(school)/penugasan'
 import { Route as schoolSetupRouteImport } from './routes/(school)/setup'
+import { Route as schoolTahunAjaranRouteImport } from './routes/(school)/tahun-ajaran'
 import { Route as ApiImporTemplateRouteImport } from './routes/api/impor-template'
 import { Route as ApiLogoRouteImport } from './routes/api/logo'
 import { Route as ApiTenantRouteImport } from './routes/api/tenant'
@@ -120,6 +121,11 @@ const schoolSetupRoute = schoolSetupRouteImport.update({
   path: '/setup',
   getParentRoute: () => rootRouteImport,
 } as any)
+const schoolTahunAjaranRoute = schoolTahunAjaranRouteImport.update({
+  id: '/(school)/tahun-ajaran',
+  path: '/tahun-ajaran',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiImporTemplateRoute = ApiImporTemplateRouteImport.update({
   id: '/api/impor-template',
   path: '/api/impor-template',
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/impor': typeof schoolImporRoute
   '/penugasan': typeof schoolPenugasanRoute
   '/setup': typeof schoolSetupRoute
+  '/tahun-ajaran': typeof schoolTahunAjaranRoute
   '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/impor': typeof schoolImporRoute
   '/penugasan': typeof schoolPenugasanRoute
   '/setup': typeof schoolSetupRoute
+  '/tahun-ajaran': typeof schoolTahunAjaranRoute
   '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
@@ -234,6 +242,7 @@ export interface FileRoutesById {
   '/(school)/impor': typeof schoolImporRoute
   '/(school)/penugasan': typeof schoolPenugasanRoute
   '/(school)/setup': typeof schoolSetupRoute
+  '/(school)/tahun-ajaran': typeof schoolTahunAjaranRoute
   '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
@@ -263,6 +272,7 @@ export interface FileRouteTypes {
     | '/impor'
     | '/penugasan'
     | '/setup'
+    | '/tahun-ajaran'
     | '/api/impor-template'
     | '/api/logo'
     | '/api/tenant'
@@ -289,6 +299,7 @@ export interface FileRouteTypes {
     | '/impor'
     | '/penugasan'
     | '/setup'
+    | '/tahun-ajaran'
     | '/api/impor-template'
     | '/api/logo'
     | '/api/tenant'
@@ -316,6 +327,7 @@ export interface FileRouteTypes {
     | '/(school)/impor'
     | '/(school)/penugasan'
     | '/(school)/setup'
+    | '/(school)/tahun-ajaran'
     | '/api/impor-template'
     | '/api/logo'
     | '/api/tenant'
@@ -344,6 +356,7 @@ export interface RootRouteChildren {
   schoolImporRoute: typeof schoolImporRoute
   schoolPenugasanRoute: typeof schoolPenugasanRoute
   schoolSetupRoute: typeof schoolSetupRoute
+  schoolTahunAjaranRoute: typeof schoolTahunAjaranRoute
   ApiImporTemplateRoute: typeof ApiImporTemplateRoute
   ApiLogoRoute: typeof ApiLogoRoute
   ApiTenantRoute: typeof ApiTenantRoute
@@ -473,6 +486,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof schoolSetupRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(school)/tahun-ajaran': {
+      id: '/(school)/tahun-ajaran'
+      path: '/tahun-ajaran'
+      fullPath: '/tahun-ajaran'
+      preLoaderRoute: typeof schoolTahunAjaranRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/impor-template': {
       id: '/api/impor-template'
       path: '/api/impor-template'
@@ -564,6 +584,7 @@ const rootRouteChildren: RootRouteChildren = {
   schoolImporRoute: schoolImporRoute,
   schoolPenugasanRoute: schoolPenugasanRoute,
   schoolSetupRoute: schoolSetupRoute,
+  schoolTahunAjaranRoute: schoolTahunAjaranRoute,
   ApiImporTemplateRoute: ApiImporTemplateRoute,
   ApiLogoRoute: ApiLogoRoute,
   ApiTenantRoute: ApiTenantRoute,
