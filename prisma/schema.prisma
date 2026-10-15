@@ -82,6 +82,31 @@ enum MembershipStatus {
   @@map("membership_status")
 }
 
+/// Jenis kelamin (PRD §7). Nilai L/P mengikuti format data sekolah di Indonesia.
+enum Gender {
+  L
+  P
+
+  @@map("gender")
+}
+
+/// Objek yang diimpor dari berkas Excel (OB-02).
+enum ImportKind {
+  teachers
+  students
+
+  @@map("import_kind")
+}
+
+enum ImportStatus {
+  queued
+  processing
+  done
+  failed
+
+  @@map("import_status")
+}
+
 /// Tenant utama. Diidentifikasi lewat subdomain -> schools.slug.
 model School {
   id               String       @id @default(uuid(7)) @db.Uuid
@@ -102,6 +127,11 @@ model School {
   majors        Major[]
   classrooms    Classroom[]
   subjects      Subject[]
+  teachers      Teacher[]
+  students      Student[]
+  enrollments   Enrollment[]
+  importBatches ImportBatch[]
+  importErrors  ImportError[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -140,10 +170,12 @@ model User {
   image         String? @db.VarChar(500)
   emailVerified Boolean @default(false) @map("email_verified")
 
-  accounts      Account[]
-  sessions      Session[]
-  memberships   Membership[]
-  platformAdmin PlatformAdmin?
+  accounts        Account[]
+  sessions        Session[]
+  memberships     Membership[]
+  platformAdmin   PlatformAdmin?
+  teacherProfiles Teacher[]
+  studentProfiles Student[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -367,9 +399,10 @@ model Classroom {
   majorId    String? @map("major_id") @db.Uuid
   name       String  @db.VarChar(64)
 
-  school   School   @relation(fields: [schoolId], references: [id], onDelete: Cascade)
-  semester Semester @relation(fields: [semesterId], references: [id], onDelete: Cascade)
-  major    Major?   @relation(fields: [majorId], references: [id], onDelete: SetNull)
+  school      School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  semester    Semester     @relation(fields: [semesterId], references: [id], onDelete: Cascade)
+  major       Major?       @relation(fields: [majorId], references: [id], onDelete: SetNull)
+  enrollments Enrollment[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -396,4 +429,122 @@ model Subject {
 
   @@index([schoolId, code])
   @@map("subjects")
+}
+
+/// Profil guru sekolah (OB-02). Nama & email diambil dari `users` (tabel
+/// global) agar tidak diduplikasi; yang disimpan di sini adalah identitas
+/// sekolah: kode guru, NIP/NUPTK. `code` wajib karena sebagian guru honor
+/// tidak punya NIP, sementara OB-03 butuh kunci unik yang stabil.
+model Teacher {
+  id       String  @id @default(uuid(7)) @db.Uuid
+  schoolId String  @map("school_id") @db.Uuid
+  userId   String  @map("user_id") @db.Uuid
+  code     String  @db.VarChar(32)
+  nip      String? @db.VarChar(18)
+  nuptk    String? @db.VarChar(32)
+  gender   Gender?
+  phone    String? @db.VarChar(20)
+
+  school School @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@unique([schoolId, userId])
+  @@index([schoolId])
+  @@map("teachers")
+}
+
+/// Profil siswa sekolah (OB-02). NIS adalah identitas sekolah dan unik per
+/// sekolah; NISN opsional (sebagian sekolah belum punya). Login siswa memakai
+/// NIS + PIN (US-01), jadi impor tidak membuat akun sandi untuk siswa.
+model Student {
+  id       String  @id @default(uuid(7)) @db.Uuid
+  schoolId String  @map("school_id") @db.Uuid
+  userId   String  @map("user_id") @db.Uuid
+  nis      String  @db.VarChar(32)
+  nisn     String? @db.VarChar(12)
+  gender   Gender?
+
+  school      School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  enrollments Enrollment[]
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@unique([schoolId, userId])
+  @@index([schoolId])
+  @@map("students")
+}
+
+/// Penempatan siswa di rombel pada satu semester (OB-02 lewat kolom "Rombel").
+model Enrollment {
+  id          String @id @default(uuid(7)) @db.Uuid
+  schoolId    String @map("school_id") @db.Uuid
+  studentId   String @map("student_id") @db.Uuid
+  classroomId String @map("classroom_id") @db.Uuid
+
+  school    School    @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  student   Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classroom Classroom @relation(fields: [classroomId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([schoolId, classroomId, studentId])
+  @@index([schoolId, studentId])
+  @@index([schoolId, classroomId])
+  @@map("enrollments")
+}
+
+/// Satu unggahan impor Excel beserta hasilnya (OB-02). Status `queued`
+/// menunggu worker pg-boss; `processing` sedang dibaca; `done` selesai
+/// (sebagian baris boleh gagal); `failed` berkas tidak bisa diproses sama sekali.
+model ImportBatch {
+  id           String       @id @default(uuid(7)) @db.Uuid
+  schoolId     String       @map("school_id") @db.Uuid
+  kind         ImportKind
+  status       ImportStatus @default(queued)
+  fileName     String       @map("file_name") @db.VarChar(191)
+  totalRows    Int          @default(0) @map("total_rows")
+  importedRows Int          @default(0) @map("imported_rows")
+  failedRows   Int          @default(0) @map("failed_rows")
+  errorMessage String?      @map("error_message") @db.VarChar(500)
+  createdBy    String       @map("created_by") @db.Uuid
+  startedAt    DateTime?    @map("started_at") @db.Timestamptz(6)
+  finishedAt   DateTime?    @map("finished_at") @db.Timestamptz(6)
+
+  school School        @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  errors ImportError[]
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@index([schoolId, createdAt])
+  @@map("import_batches")
+}
+
+/// Satu kesalahan pada satu baris berkas impor (rowNumber 0 = kesalahan berkas).
+/// Disimpan supaya laporan error bisa diunduh ulang kapan saja tanpa menyimpan
+/// berkas sumber.
+model ImportError {
+  id        String  @id @default(uuid(7)) @db.Uuid
+  schoolId  String  @map("school_id") @db.Uuid
+  batchId   String  @map("batch_id") @db.Uuid
+  rowNumber Int     @map("row_number")
+  column    String? @db.VarChar(32)
+  value     String? @db.VarChar(191)
+  message   String  @db.VarChar(300)
+
+  batch  ImportBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  school School      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([schoolId, batchId])
+  @@map("import_errors")
 }

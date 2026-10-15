@@ -13,6 +13,7 @@
 
 import { PgBoss } from "pg-boss"
 
+import { runImportBatch } from "@/features/people-import/service"
 import { purgeExpiredRateLimits } from "@/lib/rate-limit"
 import { expireSubscriptions } from "@/features/subscription/expiry"
 import { sendEmail, type EmailMessage } from "@/lib/email"
@@ -20,7 +21,14 @@ import { sendEmail, type EmailMessage } from "@/lib/email"
 export const QUEUES = {
   sendEmail: "send-email",
   expireSubscriptions: "expire-subscriptions",
+  importPeople: "import-people",
 } as const
+
+/** Data job impor: hanya dua id, tanpa data pribadi (lihat komentar di atas). */
+export interface ImportPeopleJob {
+  schoolId: string
+  batchId: string
+}
 
 const EXPIRE_CRON = "*/30 * * * *" // setiap 30 menit
 
@@ -44,6 +52,7 @@ async function startBoss(): Promise<PgBoss> {
     retryBackoff: true,
   })
   await boss.createQueue(QUEUES.expireSubscriptions)
+  await boss.createQueue(QUEUES.importPeople, { retryLimit: 2, retryDelay: 60 })
 
   await boss.work<EmailMessage>(QUEUES.sendEmail, async (jobs) => {
     // Gagal melempar error agar pg-boss mengulang sesuai retry queue.
@@ -56,6 +65,13 @@ async function startBoss(): Promise<PgBoss> {
     await purgeExpiredRateLimits()
   })
   await boss.schedule(QUEUES.expireSubscriptions, EXPIRE_CRON)
+
+  await boss.work<ImportPeopleJob>(QUEUES.importPeople, async (jobs) => {
+    for (const job of jobs) {
+      const result = await runImportBatch(job.data.schoolId, job.data.batchId)
+      console.info("[jobs] impor selesai:", result)
+    }
+  })
 
   return boss
 }
@@ -97,4 +113,21 @@ export async function enqueueEmail(message: EmailMessage): Promise<void> {
     console.error("[jobs] antrean email gagal, kirim langsung:", error)
     await sendEmail(message)
   }
+}
+
+/**
+ * Mengantrekan proses impor Excel (OB-02). Di test (VITEST) dijalankan langsung
+ * supaya test tidak bergantung pada worker pg-boss.
+ */
+export async function enqueueImportBatch(
+  schoolId: string,
+  batchId: string
+): Promise<void> {
+  if (process.env.VITEST) {
+    await runImportBatch(schoolId, batchId)
+    return
+  }
+
+  const boss = await getBoss()
+  await boss.send(QUEUES.importPeople, { schoolId, batchId } satisfies ImportPeopleJob)
 }

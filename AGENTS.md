@@ -7,6 +7,8 @@ Baca juga docs/PROGRESS.md: status pengerjaan, keputusan desain, utang, akun dev
 TanStack Start + Router + Query, Prisma ORM, PostgreSQL, Better Auth,
 Zod, Tailwind + shadcn/ui, pg-boss, Vitest, Playwright. Package manager: pnpm.
 Development di localhost tanpa Docker (PostgreSQL terpasang lokal di Windows).
+`exceljs` (OB-02) hanya dipakai di server dan harus dimuat lewat
+`createRequire`, bukan impor named — lihat docs/PROGRESS.md "Jebakan".
 
 Inisialisasi proyek (shadcn + TanStack Start):
 npx shadcn@latest init --preset b1GKyb59c --template start

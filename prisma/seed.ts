@@ -132,6 +132,9 @@ async function main() {
           level: school.level,
           status: school.status,
           timezone: school.timezone,
+          // Sekolah demo dianggap sudah lewat wizard setup; tanpa ini admin demo
+          // selalu diarahkan ke /setup dan test E2E gagal di database baru.
+          setupCompletedAt: new Date(),
         },
         update: {
           name: school.name,
@@ -141,6 +144,13 @@ async function main() {
         },
       })
       console.log(`  sekolah ${school.slug} siap`)
+
+      // Sekolah demo yang dibuat sebelum ada wizard setup dianggap sudah selesai
+      // (setara migrasi 20261020000000 yang mengisi kolomnya).
+      await prisma.school.updateMany({
+        where: { slug: school.slug, setupCompletedAt: null },
+        data: { setupCompletedAt: new Date() },
+      })
 
       const schoolRow = await prisma.school.findUniqueOrThrow({
         where: { slug: school.slug },

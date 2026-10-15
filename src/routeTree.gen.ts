@@ -23,11 +23,14 @@ import { Route as marketingPrivasiRouteImport } from './routes/(marketing)/priva
 import { Route as marketingSyaratRouteImport } from './routes/(marketing)/syarat'
 import { Route as platformPlatformRouteImport } from './routes/(platform)/platform'
 import { Route as schoolBerandaRouteImport } from './routes/(school)/beranda'
+import { Route as schoolImporRouteImport } from './routes/(school)/impor'
 import { Route as schoolSetupRouteImport } from './routes/(school)/setup'
+import { Route as ApiImporTemplateRouteImport } from './routes/api/impor-template'
 import { Route as ApiLogoRouteImport } from './routes/api/logo'
 import { Route as ApiTenantRouteImport } from './routes/api/tenant'
 import { Route as platformPlatformIndexRouteImport } from './routes/(platform)/platform.index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiLaporanImporBatchIdRouteImport } from './routes/api/laporan-impor.$batchId'
 import { Route as platformPlatformSekolahIndexRouteImport } from './routes/(platform)/platform.sekolah.index'
 import { Route as platformPlatformSekolahSchoolIdRouteImport } from './routes/(platform)/platform.sekolah.$schoolId'
 
@@ -101,9 +104,19 @@ const schoolBerandaRoute = schoolBerandaRouteImport.update({
   path: '/beranda',
   getParentRoute: () => rootRouteImport,
 } as any)
+const schoolImporRoute = schoolImporRouteImport.update({
+  id: '/(school)/impor',
+  path: '/impor',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const schoolSetupRoute = schoolSetupRouteImport.update({
   id: '/(school)/setup',
   path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiImporTemplateRoute = ApiImporTemplateRouteImport.update({
+  id: '/api/impor-template',
+  path: '/api/impor-template',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiLogoRoute = ApiLogoRouteImport.update({
@@ -124,6 +137,11 @@ const platformPlatformIndexRoute = platformPlatformIndexRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLaporanImporBatchIdRoute = ApiLaporanImporBatchIdRouteImport.update({
+  id: '/api/laporan-impor/$batchId',
+  path: '/api/laporan-impor/$batchId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const platformPlatformSekolahIndexRoute =
@@ -153,11 +171,14 @@ export interface FileRoutesByFullPath {
   '/syarat': typeof marketingSyaratRoute
   '/platform': typeof platformPlatformRouteWithChildren
   '/beranda': typeof schoolBerandaRoute
+  '/impor': typeof schoolImporRoute
   '/setup': typeof schoolSetupRoute
+  '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/laporan-impor/$batchId': typeof ApiLaporanImporBatchIdRoute
   '/platform/': typeof platformPlatformIndexRoute
   '/platform/sekolah/$schoolId': typeof platformPlatformSekolahSchoolIdRoute
   '/platform/sekolah/': typeof platformPlatformSekolahIndexRoute
@@ -175,11 +196,14 @@ export interface FileRoutesByTo {
   '/privasi': typeof marketingPrivasiRoute
   '/syarat': typeof marketingSyaratRoute
   '/beranda': typeof schoolBerandaRoute
+  '/impor': typeof schoolImporRoute
   '/setup': typeof schoolSetupRoute
+  '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
   '/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/laporan-impor/$batchId': typeof ApiLaporanImporBatchIdRoute
   '/platform': typeof platformPlatformIndexRoute
   '/platform/sekolah/$schoolId': typeof platformPlatformSekolahSchoolIdRoute
   '/platform/sekolah': typeof platformPlatformSekolahIndexRoute
@@ -199,11 +223,14 @@ export interface FileRoutesById {
   '/(marketing)/syarat': typeof marketingSyaratRoute
   '/(platform)/platform': typeof platformPlatformRouteWithChildren
   '/(school)/beranda': typeof schoolBerandaRoute
+  '/(school)/impor': typeof schoolImporRoute
   '/(school)/setup': typeof schoolSetupRoute
+  '/api/impor-template': typeof ApiImporTemplateRoute
   '/api/logo': typeof ApiLogoRoute
   '/api/tenant': typeof ApiTenantRoute
   '/(marketing)/': typeof marketingIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/laporan-impor/$batchId': typeof ApiLaporanImporBatchIdRoute
   '/(platform)/platform/': typeof platformPlatformIndexRoute
   '/(platform)/platform/sekolah/$schoolId': typeof platformPlatformSekolahSchoolIdRoute
   '/(platform)/platform/sekolah/': typeof platformPlatformSekolahIndexRoute
@@ -224,11 +251,14 @@ export interface FileRouteTypes {
     | '/syarat'
     | '/platform'
     | '/beranda'
+    | '/impor'
     | '/setup'
+    | '/api/impor-template'
     | '/api/logo'
     | '/api/tenant'
     | '/'
     | '/api/auth/$'
+    | '/api/laporan-impor/$batchId'
     | '/platform/'
     | '/platform/sekolah/$schoolId'
     | '/platform/sekolah/'
@@ -246,11 +276,14 @@ export interface FileRouteTypes {
     | '/privasi'
     | '/syarat'
     | '/beranda'
+    | '/impor'
     | '/setup'
+    | '/api/impor-template'
     | '/api/logo'
     | '/api/tenant'
     | '/'
     | '/api/auth/$'
+    | '/api/laporan-impor/$batchId'
     | '/platform'
     | '/platform/sekolah/$schoolId'
     | '/platform/sekolah'
@@ -269,11 +302,14 @@ export interface FileRouteTypes {
     | '/(marketing)/syarat'
     | '/(platform)/platform'
     | '/(school)/beranda'
+    | '/(school)/impor'
     | '/(school)/setup'
+    | '/api/impor-template'
     | '/api/logo'
     | '/api/tenant'
     | '/(marketing)/'
     | '/api/auth/$'
+    | '/api/laporan-impor/$batchId'
     | '/(platform)/platform/'
     | '/(platform)/platform/sekolah/$schoolId'
     | '/(platform)/platform/sekolah/'
@@ -293,11 +329,14 @@ export interface RootRouteChildren {
   marketingSyaratRoute: typeof marketingSyaratRoute
   platformPlatformRoute: typeof platformPlatformRouteWithChildren
   schoolBerandaRoute: typeof schoolBerandaRoute
+  schoolImporRoute: typeof schoolImporRoute
   schoolSetupRoute: typeof schoolSetupRoute
+  ApiImporTemplateRoute: typeof ApiImporTemplateRoute
   ApiLogoRoute: typeof ApiLogoRoute
   ApiTenantRoute: typeof ApiTenantRoute
   marketingIndexRoute: typeof marketingIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiLaporanImporBatchIdRoute: typeof ApiLaporanImporBatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -400,11 +439,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof schoolBerandaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(school)/impor': {
+      id: '/(school)/impor'
+      path: '/impor'
+      fullPath: '/impor'
+      preLoaderRoute: typeof schoolImporRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(school)/setup': {
       id: '/(school)/setup'
       path: '/setup'
       fullPath: '/setup'
       preLoaderRoute: typeof schoolSetupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/impor-template': {
+      id: '/api/impor-template'
+      path: '/api/impor-template'
+      fullPath: '/api/impor-template'
+      preLoaderRoute: typeof ApiImporTemplateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/logo': {
@@ -433,6 +486,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/laporan-impor/$batchId': {
+      id: '/api/laporan-impor/$batchId'
+      path: '/api/laporan-impor/$batchId'
+      fullPath: '/api/laporan-impor/$batchId'
+      preLoaderRoute: typeof ApiLaporanImporBatchIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(platform)/platform/sekolah/': {
@@ -481,11 +541,14 @@ const rootRouteChildren: RootRouteChildren = {
   marketingSyaratRoute: marketingSyaratRoute,
   platformPlatformRoute: platformPlatformRouteWithChildren,
   schoolBerandaRoute: schoolBerandaRoute,
+  schoolImporRoute: schoolImporRoute,
   schoolSetupRoute: schoolSetupRoute,
+  ApiImporTemplateRoute: ApiImporTemplateRoute,
   ApiLogoRoute: ApiLogoRoute,
   ApiTenantRoute: ApiTenantRoute,
   marketingIndexRoute: marketingIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiLaporanImporBatchIdRoute: ApiLaporanImporBatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

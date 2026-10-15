@@ -38,6 +38,11 @@ export const TENANT_MODELS = [
   "Major",
   "Classroom",
   "Subject",
+  "Teacher",
+  "Student",
+  "Enrollment",
+  "ImportBatch",
+  "ImportError",
 ] as const
 
 /** `Membership` -> `membership`, mengikuti aturan delegate Prisma Client. */
@@ -145,9 +150,15 @@ export type TenantDb = Parameters<
   Parameters<ReturnType<typeof createTenantScope>["$transaction"]>[0]
 >[0]
 
+export interface TenantDbOptions {
+  /** Batas waktu transaksi (ms). Default Prisma 5 detik; naikkan hanya untuk job massal. */
+  timeout?: number
+}
+
 export async function tenantDb<T>(
   schoolId: string,
-  fn: (db: TenantDb) => Promise<T>
+  fn: (db: TenantDb) => Promise<T>,
+  options: TenantDbOptions = {}
 ): Promise<T> {
   if (!schoolId) {
     throw new Error("tenantDb: schoolId wajib diisi")
@@ -158,5 +169,5 @@ export async function tenantDb<T>(
   return scoped.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT set_config('app.current_school_id', ${schoolId}, true)`
     return fn(tx)
-  })
+  }, options)
 }

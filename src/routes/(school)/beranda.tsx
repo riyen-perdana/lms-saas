@@ -2,11 +2,7 @@
 // halaman ini menjadi tujuan setelah login supaya alur masuk tidak buntu.
 
 import { useState } from "react"
-import {
-  createFileRoute,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router"
+import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router"
 
 import { PageHeader } from "@/components/dashboard/page-header"
 import { Button } from "@/components/ui/button"
@@ -69,6 +65,14 @@ function SchoolHome() {
         Dashboard sekolah sedang dikembangkan. Kelas, materi, tugas, dan ujian
         akan tersedia di sini pada tahap berikutnya.
       </p>
+      <div>
+        <Link
+          to="/impor"
+          className="text-ds-body text-primary underline-offset-4 hover:underline"
+        >
+          Impor guru dan siswa dari Excel
+        </Link>
+      </div>
     </main>
   )
 }
