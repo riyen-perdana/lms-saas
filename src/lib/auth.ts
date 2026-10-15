@@ -16,6 +16,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma"
 import { tanstackStartCookies } from "better-auth/tanstack-start"
 
 import { prisma } from "@/db/client"
+import { studentPin } from "@/lib/auth-student-pin"
 import { enqueueEmail } from "@/lib/jobs"
 import { resetPasswordEmail, verificationEmail } from "@/lib/email/templates"
 import { uuidv7 } from "@/lib/uuid"
@@ -95,7 +96,7 @@ export const auth = betterAuth({
     updateAge: 60 * 60 * 24,
   },
   // Wajib paling akhir: meneruskan Set-Cookie ke respons TanStack Start.
-  plugins: [tanstackStartCookies()],
+  plugins: [studentPin(), tanstackStartCookies()],
 })
 
 export type Auth = typeof auth
