@@ -86,7 +86,7 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - OB-02: `assertSafeXlsx` (excel.ts) menolak zip bomb dengan menjumlahkan ukuran terdekompresi di central directory (batas 50 MB, maks 2.000 entri) sebelum exceljs membuka berkas. Email kembar di dalam berkas ditolak per baris.
 - OB-02: berkas sumber dihapus dari storage setelah diproses (data pribadi siswa, UU PDP); laporan error disimpan per baris di `import_errors` sehingga bisa diunduh ulang kapan saja.
 - OB-02: Route unduhan memakai helper sendiri `requireSchoolAdminForDownload()` karena `schoolAdminMiddleware` hanya untuk server function.
-- Shell sekolah: layout pathless `src/routes/(school)/_app.tsx` memegang penjaga akses + `SchoolShell`; route admin hanya cek `context.role`. `/setup` dan `/gabung` di luar shell. Menu per peran didefinisikan di `school-nav.ts` (menu modul baru ditambahkan di sana). Halaman admin selain beranda kini juga mengarahkan admin yang belum setup ke `/setup` Halaman-halaman admin masih memakai `max-w-3xl` tanpa `mx-auto` (rata kiri di dalam shell) sampai dirapikan di Tahap 2/3.
+- Shell sekolah: layout pathless `src/routes/(school)/_app.tsx` memegang penjaga akses + `SchoolShell`; route admin hanya cek `context.role`. `/setup` dan `/gabung` di luar shell. Menu per peran didefinisikan di `school-nav.ts` (menu modul baru ditambahkan di sana). Halaman admin selain beranda kini juga mengarahkan admin yang belum setup ke `/setup`. Halaman-halaman admin masih memakai `max-w-3xl` tanpa `mx-auto` (rata kiri di dalam shell) sampai dirapikan di Tahap 2/3.
 
 ## Utang / belum ada
 - Email pemberitahuan trial segera berakhir; penyedia email nyata (hanya driver `console`/`memory`)
