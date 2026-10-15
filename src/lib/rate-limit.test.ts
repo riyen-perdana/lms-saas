@@ -5,6 +5,7 @@ import { afterAll, describe, expect, it } from "vitest"
 import { prisma } from "@/db/client"
 import {
   RateLimitError,
+  assertRateLimit,
   clientAddress,
   consumeRateLimit,
   purgeExpiredRateLimits,
@@ -75,5 +76,35 @@ describe("clientAddress", () => {
 
   it("jatuh ke unknown bila tanpa header", () => {
     expect(clientAddress(new Headers())).toBe("unknown")
+  })
+})
+
+describe("assertRateLimit", () => {
+  const checkRule = { bucket: `${bucket}-assert`, limit: 2, windowSeconds: 60 }
+  const now = new Date("2026-10-14T10:00:00Z")
+
+  it("tidak menambah hitungan dan menolak setelah batas tercapai", async () => {
+    await assertRateLimit(checkRule, "a", now)
+    await consumeRateLimit(checkRule, "a", now)
+    await assertRateLimit(checkRule, "a", now)
+    await consumeRateLimit(checkRule, "a", now)
+
+    await expect(assertRateLimit(checkRule, "a", now)).rejects.toBeInstanceOf(
+      RateLimitError
+    )
+
+    const row = await prisma.rateLimit.findUniqueOrThrow({
+      where: { key: `${checkRule.bucket}:a` },
+    })
+    expect(row.count).toBe(2)
+  })
+
+  it("melepas setelah jendela lewat", async () => {
+    const later = new Date(now.getTime() + 61_000)
+    await assertRateLimit(checkRule, "a", later)
+  })
+
+  it("subjek lain tidak terpengaruh", async () => {
+    await assertRateLimit(checkRule, "b", now)
   })
 })
