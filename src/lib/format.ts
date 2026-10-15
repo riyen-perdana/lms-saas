@@ -26,3 +26,13 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000
 export function daysUntil(to: Date | string, from: Date = new Date()): number {
   return Math.ceil((new Date(to).getTime() - from.getTime()) / MS_PER_DAY)
 }
+
+/** Inisial untuk avatar: huruf awal dua kata pertama, huruf besar. */
+export function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("")
+}

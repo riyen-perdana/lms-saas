@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/sidebar"
 import { getAccess } from "@/features/auth/server/access"
 import { signOut } from "@/lib/auth-client"
+import { initials } from "@/lib/format"
 
 export const Route = createFileRoute("/(platform)/platform")({
   beforeLoad: async () => {
@@ -79,15 +80,6 @@ const NAV_GROUPS = [
     ],
   },
 ] as const
-
-function initials(name: string): string {
-  return name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0].toUpperCase())
-    .join("")
-}
 
 function PlatformLayout() {
   const { admin } = Route.useRouteContext()
