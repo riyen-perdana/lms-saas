@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
 Terakhir diperbarui: 2026-10-15
-Pemeriksaan: typecheck, lint, 284 test unit, 89 E2E (Playwright, 1 skipped), dan `pnpm build` hijau.
+Pemeriksaan: typecheck, lint, 298 test unit, 89 E2E (Playwright, 1 skipped), dan `pnpm build` hijau.
 
 ## Status per fase (PRD §10)
 
@@ -10,6 +10,7 @@ Pemeriksaan: typecheck, lint, 284 test unit, 89 E2E (Playwright, 1 skipped), dan
 | F0 Fondasi | **Selesai** — tenant, RLS, Better Auth, login per subdomain, CI |
 | F1 Landing & registrasi | **Selesai** (utang di bawah) |
 | F2 Onboarding & pengguna | **Berjalan** — OB-01 s.d. OB-05, US-04, dan US-03 selesai; sisa US-02, US-01 (login siswa SD via NIS+PIN) |
+| Pekerjaan UI sekolah | **Tahap 1 selesai** (shell sidebar + breadcrumb + menu akun). Berikutnya Tahap 2 (DataTable daftar-detail) dan Tahap 3 (penataan halaman + KPI beranda) |
 
 ### Sudah jadi di F0–F1
 - Resolusi subdomain, `tenantDb` + RLS, test isolasi antar sekolah
@@ -85,6 +86,7 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - OB-02: `assertSafeXlsx` (excel.ts) menolak zip bomb dengan menjumlahkan ukuran terdekompresi di central directory (batas 50 MB, maks 2.000 entri) sebelum exceljs membuka berkas. Email kembar di dalam berkas ditolak per baris.
 - OB-02: berkas sumber dihapus dari storage setelah diproses (data pribadi siswa, UU PDP); laporan error disimpan per baris di `import_errors` sehingga bisa diunduh ulang kapan saja.
 - OB-02: Route unduhan memakai helper sendiri `requireSchoolAdminForDownload()` karena `schoolAdminMiddleware` hanya untuk server function.
+- Shell sekolah: layout pathless `src/routes/(school)/_app.tsx` memegang penjaga akses + `SchoolShell`; route admin hanya cek `context.role`. `/setup` dan `/gabung` di luar shell. Menu per peran didefinisikan di `school-nav.ts` (menu modul baru ditambahkan di sana). Halaman admin selain beranda kini juga mengarahkan admin yang belum setup ke `/setup`
 
 ## Utang / belum ada
 - Email pemberitahuan trial segera berakhir; penyedia email nyata (hanya driver `console`/`memory`)
@@ -122,4 +124,6 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - Test integrasi memakai `DATABASE_URL` (superuser) untuk fixture dan `DATABASE_APP_URL` (role `edusaas_app`, kena RLS) lewat service; jangan membalik keduanya.
 - Console piping devtools dimatikan di `vite.config.ts` (memantulkan log hydration dari ekstensi browser).
 - Log `Error: aborted ... ECONNRESET` di server dev muncul saat browser menutup koneksi; tidak berbahaya.
+- Tombol Keluar kini ada di menu akun sidebar (di mobile sidebar harus dibuka dulu); E2E memakai `getByRole("button", { name: /Admin sekolah/ })` lalu `menuitem "Keluar"`.
+- Shell menambah daftar/tombol/tautan di semua halaman sekolah: `getByRole("listitem")` atau `getByRole("button", { name: "Impor" })` tanpa cakupan kini bisa cocok dengan item sidebar/breadcrumb/menu akun. Batasi ke `main ul` / `main`, atau pakai nama persis (`exact: true`).
 - Windows/CRLF: edit file lewat tool Edit; skrip Python harus membuka file dengan `newline=''`. Perintah bash yang sangat panjang bisa gagal di-parse, tulis file lewat tool Write.
