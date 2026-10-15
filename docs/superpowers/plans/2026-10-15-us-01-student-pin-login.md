@@ -467,7 +467,10 @@ describe("issueStudentPin + verifyStudentPin", () => {
 
 describe("issuePinsForClassroom", () => {
   it("membuat PIN untuk siswa rombel yang belum punya, melewati yang sudah punya, satu audit tanpa PIN", async () => {
-    // Ani sudah punya PIN dari test sebelumnya; Budi juga. Buat siswa baru.
+    // Ani dan Budi diberi PIN dulu (test ini tidak boleh bergantung pada urutan
+    // test lain); Dina dan Eko adalah siswa baru tanpa PIN.
+    await issueStudentPin(schoolAId, ACTOR, ani.id)
+    await issueStudentPin(schoolAId, ACTOR, budi.id)
     const dina = await createStudent(schoolAId, "6201", "Dina Aulia")
     const eko = await createStudent(schoolAId, "6202", "Eko Prasetyo")
     await enroll(schoolAId, kelasA, dina.id)
@@ -1060,11 +1063,23 @@ Buat `src/lib/auth-student-pin.test.ts`:
 
 import { randomUUID } from "node:crypto"
 
+import { PrismaPg } from "@prisma/adapter-pg"
 import { afterAll, beforeAll, describe, expect, it } from "vitest"
 
 import { prisma } from "@/db/client"
+import { PrismaClient } from "@/generated/prisma/client"
 import { issueStudentPin } from "@/features/student-pin/service"
 import { auth } from "@/lib/auth"
+
+// Fixture lewat `admin` (DATABASE_URL, superuser); `prisma` aplikasi (role
+// biasa, kena RLS) hanya dipakai untuk tabel global rate_limits.
+const adminUrl = process.env.DATABASE_URL
+if (!adminUrl)
+  throw new Error("DATABASE_URL belum diisi; test integrasi butuh .env")
+
+const admin = new PrismaClient({
+  adapter: new PrismaPg({ connectionString: adminUrl }),
+})
 
 const suffix = randomUUID().slice(0, 8)
 const ACTOR = { userId: randomUUID(), role: "school_admin" as const }
@@ -1081,21 +1096,21 @@ const headersFor = (label: string, extra: Record<string, string> = {}) =>
 
 beforeAll(async () => {
   const slug = `ap-${suffix}`
-  const school = await prisma.school.create({
+  const school = await admin.school.create({
     data: { slug, name: "SD Endpoint Pin", level: "SD" },
   })
   schoolId = school.id
   host = `${slug}.localhost:3000`
 
   email = `8001-${suffix}@${slug}.invalid`
-  const user = await prisma.user.create({
+  const user = await admin.user.create({
     data: { email, name: "Siswa Endpoint", emailVerified: true },
   })
   userId = user.id
-  const student = await prisma.student.create({
+  const student = await admin.student.create({
     data: { schoolId, userId, nis: "8001" },
   })
-  await prisma.membership.create({
+  await admin.membership.create({
     data: { schoolId, userId, role: "student", status: "active" },
   })
   pin = (await issueStudentPin(schoolId, ACTOR, student.id)).pin
@@ -1104,8 +1119,9 @@ beforeAll(async () => {
 afterAll(async () => {
   await prisma.rateLimit.deleteMany({ where: { key: { contains: suffix } } })
   await prisma.rateLimit.deleteMany({ where: { key: { contains: schoolId } } })
-  await prisma.school.deleteMany({ where: { id: schoolId } })
-  await prisma.user.deleteMany({ where: { id: userId } })
+  await admin.school.deleteMany({ where: { id: schoolId } })
+  await admin.user.deleteMany({ where: { id: userId } })
+  await admin.$disconnect()
   await prisma.$disconnect()
 })
 
