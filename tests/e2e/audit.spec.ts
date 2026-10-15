@@ -120,7 +120,7 @@ test("admin melihat log audit, memfilter, dan memuat halaman berikutnya", async 
   await expect(page.getByRole("heading", { name: "Log audit" })).toBeVisible()
 
   // 50 baris pertama; tombol muat lebih banyak menambah sisanya (53 total).
-  const items = page.locator("main main").getByRole("listitem")
+  const items = page.locator("main ul").getByRole("listitem")
   await expect(items).toHaveCount(50)
   const more = page.getByRole("button", { name: "Muat lebih banyak" })
   await expect(more).toBeEnabled()

@@ -168,7 +168,7 @@ export function SchoolShell({
             </BreadcrumbList>
           </Breadcrumb>
         </header>
-        <main className="flex flex-col gap-6 p-6">{children}</main>
+        <div className="flex flex-col gap-6 p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   )
