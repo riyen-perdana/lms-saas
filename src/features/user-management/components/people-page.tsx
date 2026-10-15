@@ -112,7 +112,12 @@ export function PeoplePage({ initial }: { initial: PeopleList }) {
             />
           </Field>
         </div>
-        <Button type="submit" variant="outline" disabled={!ready}>
+        <Button
+          type="submit"
+          variant="outline"
+          className="rounded-md"
+          disabled={!ready}
+        >
           Cari
         </Button>
       </form>
@@ -164,6 +169,7 @@ export function PeoplePage({ initial }: { initial: PeopleList }) {
                       </span>
                       <Button
                         size="sm"
+                        className="rounded-md"
                         disabled={!ready || pending}
                         onClick={() => void sendReset(person)}
                       >
@@ -172,6 +178,7 @@ export function PeoplePage({ initial }: { initial: PeopleList }) {
                       <Button
                         size="sm"
                         variant="outline"
+                        className="rounded-md"
                         disabled={pending}
                         onClick={() => setConfirmId(null)}
                       >
@@ -182,6 +189,7 @@ export function PeoplePage({ initial }: { initial: PeopleList }) {
                     <Button
                       size="sm"
                       variant="outline"
+                      className="rounded-md"
                       disabled={!ready}
                       aria-label={`Reset sandi ${person.name}`}
                       onClick={() => {
