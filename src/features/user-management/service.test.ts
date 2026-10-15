@@ -109,7 +109,11 @@ beforeAll(async () => {
   guruHapus = (
     await createTeacher(schoolAId, "GRU-A3", "Citra Dihapus", { deleted: true })
   ).id
-  await createStudent(schoolAId, "7001", "Dina Siswa")
+  const dinaId = await createStudent(schoolAId, "7001", "Dina Siswa")
+  await admin.studentPin.create({
+    data: { schoolId: schoolAId, studentId: dinaId, pinHash: "x" },
+  })
+  await createStudent(schoolAId, "7003", "Gina Tanpa Pin")
   guruB = (await createTeacher(schoolBId, "GRU-B1", "Eko Sekolah B")).id
   await createStudent(schoolBId, "7002", "Fani Sekolah B")
 })
@@ -136,6 +140,7 @@ describe("listPeople", () => {
       "Ani Guru",
       "Budi Guru",
       "Dina Siswa",
+      "Gina Tanpa Pin",
     ])
     expect(truncated).toBe(false)
   })
@@ -148,7 +153,20 @@ describe("listPeople", () => {
         identifier: "7001",
         email: null,
       }),
+      expect.objectContaining({
+        role: "student",
+        identifier: "7003",
+        email: null,
+      }),
     ])
+  })
+
+  it("siswa yang sudah punya PIN bertanda hasPin; siswa tanpa PIN dan guru tidak", async () => {
+    const { rows } = await listPeople(schoolAId)
+    const byName = Object.fromEntries(rows.map((row) => [row.name, row.hasPin]))
+    expect(byName["Dina Siswa"]).toBe(true)
+    expect(byName["Gina Tanpa Pin"]).toBe(false)
+    expect(byName["Ani Guru"]).toBe(false)
   })
 
   it("guru memakai kode sebagai pengenal dan menampilkan email", async () => {

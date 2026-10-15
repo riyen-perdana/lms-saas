@@ -39,6 +39,8 @@ export interface PersonRow {
   identifier: string
   /** Email nyata; null untuk siswa (emailnya palsu `.invalid`). */
   email: string | null
+  /** Siswa sudah punya PIN; guru selalu false. */
+  hasPin: boolean
 }
 
 export interface PeopleList {
@@ -91,7 +93,12 @@ export async function listPeople(
             },
             orderBy: { user: { name: "asc" } },
             take,
-            select: { id: true, nis: true, user: { select: { name: true } } },
+            select: {
+              id: true,
+              nis: true,
+              user: { select: { name: true } },
+              pins: { select: { id: true }, take: 1 },
+            },
           })
 
     return [
@@ -102,6 +109,7 @@ export async function listPeople(
           name: teacher.user.name,
           identifier: teacher.code,
           email: teacher.user.email,
+          hasPin: false,
         })
       ),
       ...students.map(
@@ -111,6 +119,7 @@ export async function listPeople(
           name: student.user.name,
           identifier: student.nis,
           email: null,
+          hasPin: student.pins.length > 0,
         })
       ),
     ]
