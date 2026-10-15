@@ -21,7 +21,7 @@ Di luar cakupan: siswa mengubah PIN sendiri, PIN di laporan impor, antarmuka khu
 Satu migrasi baru (jangan ubah migrasi yang ada). Tabel tenant `student_pins`:
 `id` (uuid v7), `schoolId`, `studentId` (unik), `pinHash`, `createdAt`, `updatedAt`. Indeks diawali `schoolId`. Policy RLS di SQL migrasi. Relasi ke `Student`.
 
-PIN: 6 digit dari `crypto.randomInt`, di-hash dengan `hashPassword` dari `better-auth/crypto` (scrypt, sama seperti sandi guru di OB-02). Teks PIN tidak pernah disimpan atau dicatat di log atau audit.
+PIN: 6 digit dari `crypto.randomInt` (rentang 100000-999999, tanpa nol di depan supaya CSV/spreadsheet tidak membuang angka nol), di-hash dengan `hashPassword` dari `better-auth/crypto` (scrypt, sama seperti sandi guru di OB-02). Teks PIN tidak pernah disimpan atau dicatat di log atau audit.
 
 ## Login (plugin Better Auth `student-pin`)
 
@@ -55,7 +55,7 @@ Login berhasil tidak menambah hitungan, jadi satu kelas yang login bersamaan lew
 - `schema.ts`: `studentIdSchema`, `classroomIdSchema`, skema login `{ nis, pin }` (pin = tepat 6 digit).
 - `service.ts`:
   - `issueStudentPin(schoolId, actor, studentId)`: dalam satu transaksi `tenantDb`, upsert hash, hapus semua sesi pengguna siswa itu, `recordAudit` aksi `student.pin_issue` (entity `student`, id, NIS; **tanpa PIN**), lalu kembalikan PIN sekali. Siswa sekolah lain atau tidak ada: `NOT_FOUND`.
-  - `issuePinsForClassroom(schoolId, actor, classroomId)`: untuk semua siswa terdaftar di rombel semester aktif; satu audit `student.pin_issue_bulk` (id rombel, jumlah). Mengembalikan baris NIS, nama, PIN.
+  - `issuePinsForClassroom(schoolId, actor, classroomId)`: untuk siswa terdaftar di rombel yang BELUM punya PIN (yang sudah punya dilewati dan dihitung sebagai `skipped`, seperti kode undangan OB-05, agar klik massal tidak mengeluarkan satu kelas dari sesinya; PIN siswa yang sudah punya diganti per siswa lewat reset). UI hanya menawarkan rombel semester aktif; satu audit `student.pin_issue_bulk` (id rombel, jumlah). Mengembalikan baris NIS, nama, PIN.
   - Fungsi verifikasi untuk plugin: `verifyStudentPin(schoolId, nis, pin)` mengembalikan `userId` atau null.
 - `server/student-pin.ts`: server function dengan `schoolAdminMiddleware`; hasil CSV memakai pola `parent-link/csv.ts`.
 - Tambah dua aksi ke `AUDIT_ACTIONS`.
