@@ -118,7 +118,7 @@ export function ImportPage({ batches }: { batches: ImportBatchSummary[] }) {
   const kolom = IMPORT_COLUMNS[jenis]
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
+    <div className="flex max-w-3xl flex-col gap-6">
       <PageHeader
         title="Impor guru dan siswa"
         description="Unduh template, isi data di Excel, lalu unggah berkasnya di sini."
@@ -250,6 +250,6 @@ export function ImportPage({ batches }: { batches: ImportBatchSummary[] }) {
           </div>
         )}
       </section>
-    </main>
+    </div>
   )
 }

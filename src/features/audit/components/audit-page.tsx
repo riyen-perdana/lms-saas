@@ -70,7 +70,7 @@ export function AuditPage({ initial }: { initial: Page }) {
   }
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
+    <div className="flex max-w-3xl flex-col gap-6">
       <PageHeader
         title="Log audit"
         description="Jejak aksi sensitif di sekolah ini: perubahan langganan, impor, kenaikan kelas, dan penghapusan data. Log tidak dapat diubah atau dihapus. Waktu dalam WIB."
@@ -170,6 +170,6 @@ export function AuditPage({ initial }: { initial: Page }) {
           </Button>
         </div>
       ) : null}
-    </main>
+    </div>
   )
 }

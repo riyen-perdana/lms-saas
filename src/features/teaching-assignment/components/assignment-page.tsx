@@ -324,7 +324,7 @@ export function AssignmentPage({ board }: { board: AssignmentBoard }) {
 
   if (!board.semester) {
     return (
-      <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
+      <div className="flex max-w-3xl flex-col gap-6">
         <PageHeader
           title="Penugasan guru"
           description="Kelas pembelajaran adalah pasangan rombel, mata pelajaran, dan guru pada satu semester."
@@ -336,14 +336,14 @@ export function AssignmentPage({ board }: { board: AssignmentBoard }) {
           </Link>{" "}
           lebih dulu.
         </p>
-      </main>
+      </div>
     )
   }
 
   const rows = filter ? board.courses.filter((row) => row.classroomId === filter) : board.courses
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
+    <div className="flex max-w-3xl flex-col gap-6">
       <PageHeader
         title="Penugasan guru"
         description={`Kelas pembelajaran semester ${board.semester.name} ${board.semester.academicYearName}: pasangan rombel, mata pelajaran, dan guru.`}
@@ -434,6 +434,6 @@ export function AssignmentPage({ board }: { board: AssignmentBoard }) {
           </ul>
         )}
       </section>
-    </main>
+    </div>
   )
 }

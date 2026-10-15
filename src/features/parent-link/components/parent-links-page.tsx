@@ -101,17 +101,17 @@ export function ParentLinksPage({ board }: { board: Board }) {
 
   if (!board.semesterName) {
     return (
-      <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
+      <div className="flex max-w-3xl flex-col gap-6">
         <PageHeader title="Tautan orang tua" />
         <p className="rounded-md border border-border p-4 text-ds-body text-muted-foreground">
           Sekolah belum punya semester aktif. Lengkapi setup sekolah lebih dulu.
         </p>
-      </main>
+      </div>
     )
   }
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-10">
+    <div className="flex max-w-3xl flex-col gap-6">
       <PageHeader
         title="Tautan orang tua"
         description={`Buat kode undangan agar orang tua dapat menautkan akun ke anaknya (semester ${board.semesterName}). Kode hanya tampil sekali dan berlaku 14 hari; bagikan lewat wali kelas atau cetak dari CSV.`}
@@ -325,6 +325,6 @@ export function ParentLinksPage({ board }: { board: Board }) {
           </ul>
         )
       ) : null}
-    </main>
+    </div>
   )
 }

@@ -402,7 +402,7 @@ export function RolloverPage({ years }: { years: RolloverYear[] }) {
   const onChanged = () => router.invalidate()
 
   return (
-    <main className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-10">
+    <div className="flex max-w-3xl flex-col gap-8">
       <PageHeader
         title="Tahun ajaran dan kenaikan kelas"
         description="Atur semester aktif, tambahkan tahun ajaran baru, lalu naikkan rombel dan siswa ke semester berikutnya."
@@ -426,6 +426,6 @@ export function RolloverPage({ years }: { years: RolloverYear[] }) {
       </section>
 
       <RolloverPanel key={years.map((year) => year.id).join(",")} years={years} onChanged={onChanged} />
-    </main>
+    </div>
   )
 }
