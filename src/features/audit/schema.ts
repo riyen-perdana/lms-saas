@@ -12,6 +12,7 @@ export const AUDIT_ACTIONS = {
   "parent_link.revoke": "Pencabutan tautan atau kode orang tua",
   "course.remove": "Penghapusan kelas pembelajaran",
   "homeroom.clear": "Pencabutan wali kelas",
+  "user.password_reset": "Permintaan reset sandi pengguna",
 } as const
 
 export type AuditAction = keyof typeof AUDIT_ACTIONS
