@@ -154,8 +154,8 @@ test("admin sekolah mengimpor siswa dari Excel dan mengunduh laporan error", asy
     mimeType: XLSX_MIME,
     buffer: file,
   })
-  await expect(page.getByRole("button", { name: "Impor" })).toBeEnabled()
-  await page.getByRole("button", { name: "Impor" }).click()
+  await expect(page.getByRole("button", { name: "Impor", exact: true })).toBeEnabled()
+  await page.getByRole("button", { name: "Impor", exact: true }).click()
 
   // Worker pg-boss memproses berkas; tabel disegarkan otomatis.
   await expect(page.getByRole("cell", { name: "siswa.xlsx" })).toBeVisible()

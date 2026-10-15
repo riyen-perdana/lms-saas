@@ -60,10 +60,17 @@ test("admin sekolah yang sudah login membuka / lalu mendarat di beranda (tanpa l
   await page.goto(`${MAN3}/`)
   await expect(page).toHaveURL(/\/beranda$/)
 
-  // Keluar mengembalikan ke login, dan beranda tidak bisa dibuka lagi.
+  // Keluar lewat menu akun di sidebar; mobile menyembunyikan sidebar di sheet.
   // Klik sebelum hydrate tidak berefek; ulangi sampai handler terpasang.
   await expect(async () => {
-    await page.getByRole("button", { name: "Keluar" }).click()
+    const account = page.getByRole("button", { name: /Admin sekolah/ })
+    if (!(await account.isVisible())) {
+      await page.getByRole("button", { name: "Buka/tutup sidebar" }).click()
+    }
+    const keluar = page.getByRole("menuitem", { name: "Keluar" })
+    // Jangan klik pemicu lagi bila menu sudah terbuka (akan menutupnya).
+    if (!(await keluar.isVisible())) await account.click({ timeout: 3000 })
+    await keluar.click({ timeout: 3000 })
     await expect(page).toHaveURL(/\/login$/, { timeout: 1500 })
   }).toPass({ timeout: 15_000 })
   await page.goto(`${MAN3}/beranda`)
