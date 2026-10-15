@@ -37,6 +37,7 @@ if (!adminUrl) throw new Error("DATABASE_URL belum diisi; test integrasi butuh .
 
 const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) })
 const suffix = randomUUID().slice(0, 8)
+const ACTOR = { userId: randomUUID(), role: "school_admin" as const }
 
 let schoolAId: string
 let schoolBId: string
@@ -195,11 +196,17 @@ describe("impor siswa", () => {
       { nis: "1003", name: "Citra Dewi", gender: "P", classroom: "XI-2" },
     ])
 
-    const { batchId } = await startImport(schoolAId, randomUUID(), {
+    const { batchId } = await startImport(schoolAId, ACTOR, {
       kind: "students",
       fileName: "siswa.xlsx",
       body,
     })
+
+    expect(
+      await admin.auditLog.count({
+        where: { schoolId: schoolAId, action: "import.start", entityId: batchId },
+      })
+    ).toBe(1)
 
     const [batch] = await listImportBatches(schoolAId)
     expect(batch.id).toBe(batchId)
@@ -240,7 +247,7 @@ describe("impor siswa", () => {
       { nis: "2001", name: "Duplikat NIS" },
     ])
 
-    const { batchId } = await startImport(schoolAId, randomUUID(), {
+    const { batchId } = await startImport(schoolAId, ACTOR, {
       kind: "students",
       fileName: "siswa-salah.xlsx",
       body,
@@ -276,7 +283,7 @@ describe("impor siswa", () => {
       { nis: "9001", name: "Baru Nadira" },
     ])
 
-    await startImport(schoolAId, randomUUID(), {
+    await startImport(schoolAId, ACTOR, {
       kind: "students",
       fileName: "siswa-ulang.xlsx",
       body,
@@ -303,7 +310,7 @@ describe("impor siswa", () => {
       [salahJudul, /Kolom wajib yang hilang/],
       [kosong, /Tidak ada baris data/],
     ] as const) {
-      const { batchId } = await startImport(schoolAId, randomUUID(), {
+      const { batchId } = await startImport(schoolAId, ACTOR, {
         kind: "students",
         fileName: "rusak.xlsx",
         body,
@@ -323,7 +330,7 @@ describe("impor siswa", () => {
     const before = (await listImportBatches(schoolAId)).length
 
     await expect(
-      startImport(schoolAId, randomUUID(), {
+      startImport(schoolAId, ACTOR, {
         kind: "students",
         fileName: "siswa.csv",
         body: Buffer.from("nis,nama\n"),
@@ -331,7 +338,7 @@ describe("impor siswa", () => {
     ).rejects.toMatchObject({ code: "INVALID" })
 
     await expect(
-      startImport(schoolAId, randomUUID(), {
+      startImport(schoolAId, ACTOR, {
         kind: "students",
         fileName: "besar.xlsx",
         body: Buffer.alloc(6 * 1024 * 1024),
@@ -350,7 +357,7 @@ describe("impor siswa", () => {
     }))
 
     const started = Date.now()
-    const { batchId } = await startImport(schoolBId, randomUUID(), {
+    const { batchId } = await startImport(schoolBId, ACTOR, {
       kind: "students",
       fileName: "siswa-1000.xlsx",
       body: await buildFile("students", rows),
@@ -375,7 +382,7 @@ describe("impor guru", () => {
     clearMemoryOutbox()
 
     const email = `guru-${suffix}@sekolah.test`
-    await startImport(schoolBId, randomUUID(), {
+    await startImport(schoolBId, ACTOR, {
       kind: "teachers",
       fileName: "guru.xlsx",
       body: await buildFile("teachers", [
@@ -420,7 +427,7 @@ describe("impor guru", () => {
       { code: "G-003", name: "Email Bentrok", email: email.toUpperCase() },
     ])
 
-    const { batchId } = await startImport(schoolBId, randomUUID(), {
+    const { batchId } = await startImport(schoolBId, ACTOR, {
       kind: "teachers",
       fileName: "guru-salah.xlsx",
       body,
@@ -465,7 +472,7 @@ describe("ketahanan impor", () => {
 
     expect(() => assertSafeXlsx(body)).toThrow(/terlalu besar/)
 
-    const { batchId } = await startImport(schoolAId, randomUUID(), {
+    const { batchId } = await startImport(schoolAId, ACTOR, {
       kind: "teachers",
       fileName: "bom.xlsx",
       body,
@@ -483,7 +490,7 @@ describe("ketahanan impor", () => {
 
   it("email kembar di dalam berkas ditolak per baris, bukan menggagalkan seluruh batch", async () => {
     const email = `kembar-${suffix}@sekolah.test`
-    const { batchId } = await startImport(schoolAId, randomUUID(), {
+    const { batchId } = await startImport(schoolAId, ACTOR, {
       kind: "teachers",
       fileName: "email-kembar.xlsx",
       body: await buildFile("teachers", [
@@ -522,7 +529,7 @@ describe("ketahanan impor", () => {
       }))
       const before = await tenantDb(schoolAId, (db) => db.teacher.count())
 
-      const { batchId } = await startImport(schoolAId, randomUUID(), {
+      const { batchId } = await startImport(schoolAId, ACTOR, {
         kind: "teachers",
         fileName: "atomik.xlsx",
         body: await buildFile("teachers", rows),
@@ -570,7 +577,7 @@ describe("isolasi antar sekolah", () => {
       db.student.findFirstOrThrow({ where: { nis: "1001" } })
     )
 
-    await startImport(schoolBId, randomUUID(), {
+    await startImport(schoolBId, ACTOR, {
       kind: "students",
       fileName: "tabrakan.xlsx",
       body: await buildFile("students", [{ nis: "1001", name: "Nama Berubah" }]),

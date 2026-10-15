@@ -30,6 +30,7 @@ const admin = new PrismaClient({
 })
 
 const suffix = randomUUID().slice(0, 8)
+const ACTOR = { userId: randomUUID(), role: "platform_admin" as const }
 const NOW = new Date("2026-10-14T03:00:00Z")
 
 let schoolAId: string
@@ -200,7 +201,7 @@ describe("getOverview", () => {
 
 describe("activatePlan", () => {
   it("membatalkan trial, membuat langganan aktif 6 bulan, dan mengaktifkan sekolah", async () => {
-    await activatePlan(
+    await activatePlan(ACTOR, 
       { schoolId: schoolAId, planCode: planProCode, period: "semester" },
       NOW
     )
@@ -219,6 +220,16 @@ describe("activatePlan", () => {
       where: { schoolId: schoolAId },
     })
     expect(all.map((row) => row.status).sort()).toEqual(["active", "canceled"])
+
+    const logs = await admin.auditLog.findMany({
+      where: { schoolId: schoolAId, action: "subscription.activate" },
+    })
+    expect(logs).toHaveLength(1)
+    expect(logs[0]).toMatchObject({
+      actorRole: "platform_admin",
+      before: { status: "trial" },
+      after: { status: "active", planCode: planProCode, period: "semester" },
+    })
   })
 
   it("tidak mengubah sekolah lain", async () => {
@@ -229,7 +240,7 @@ describe("activatePlan", () => {
   })
 
   it("periode tahunan menghasilkan 12 bulan", async () => {
-    await activatePlan(
+    await activatePlan(ACTOR, 
       { schoolId: schoolBId, planCode: planProCode, period: "year" },
       NOW
     )
@@ -244,38 +255,43 @@ describe("activatePlan", () => {
     const base = { schoolId: schoolAId, period: "semester" as const }
 
     await expect(
-      activatePlan({ ...base, planCode: "trial" })
+      activatePlan(ACTOR, { ...base, planCode: "trial" })
     ).rejects.toMatchObject({
       code: "TRIAL_PLAN_NOT_ACTIVATABLE",
     })
     await expect(
-      activatePlan({ ...base, planCode: "tidak-ada" })
+      activatePlan(ACTOR, { ...base, planCode: "tidak-ada" })
     ).rejects.toBeInstanceOf(PlatformError)
     await expect(
-      activatePlan({ ...base, schoolId: randomUUID(), planCode: planProCode })
+      activatePlan(ACTOR, { ...base, schoolId: randomUUID(), planCode: planProCode })
     ).rejects.toMatchObject({ code: "SCHOOL_NOT_FOUND" })
   })
 })
 
 describe("setSuspended", () => {
   it("menangguhkan lalu mengembalikan sesuai langganan yang berlaku", async () => {
-    expect(await setSuspended(schoolAId, true)).toBe("suspended")
+    expect(await setSuspended(ACTOR, schoolAId, true)).toBe("suspended")
     expect((await getSchool(schoolAId)).status).toBe("suspended")
+    expect(
+      await admin.auditLog.count({
+        where: { schoolId: schoolAId, action: "school.suspend" },
+      })
+    ).toBeGreaterThanOrEqual(1)
 
     // Langganan aktif sekolah A berlaku sampai 2027-04 (NOW + 6 bulan), jadi
     // pengecekan "belum habis" memakai tanggal NOW.
-    expect(await setSuspended(schoolAId, false, NOW)).toBe("active")
+    expect(await setSuspended(ACTOR, schoolAId, false, NOW)).toBe("active")
   })
 
   it("menjadi readonly bila langganan sudah habis", async () => {
-    await setSuspended(schoolAId, true)
+    await setSuspended(ACTOR, schoolAId, true)
 
     const farFuture = new Date("2030-01-01T00:00:00Z")
-    expect(await setSuspended(schoolAId, false, farFuture)).toBe("readonly")
+    expect(await setSuspended(ACTOR, schoolAId, false, farFuture)).toBe("readonly")
   })
 
   it("menolak sekolah yang tidak ada", async () => {
-    await expect(setSuspended(randomUUID(), true)).rejects.toMatchObject({
+    await expect(setSuspended(ACTOR, randomUUID(), true)).rejects.toMatchObject({
       code: "SCHOOL_NOT_FOUND",
     })
   })
@@ -288,10 +304,10 @@ describe("cache tenant", () => {
     // Isi cache lebih dulu: tanpa invalidasi, status lama bertahan 30 detik.
     expect((await resolveSchoolBySlug(slug))?.status).not.toBe("suspended")
 
-    await setSuspended(schoolBId, true)
+    await setSuspended(ACTOR, schoolBId, true)
     expect((await resolveSchoolBySlug(slug))?.status).toBe("suspended")
 
-    await setSuspended(schoolBId, false, NOW)
+    await setSuspended(ACTOR, schoolBId, false, NOW)
     expect((await resolveSchoolBySlug(slug))?.status).not.toBe("suspended")
   })
 })

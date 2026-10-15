@@ -7,6 +7,7 @@
 
 import { prisma } from "@/db/client"
 import { platformDb } from "@/db/platform"
+import { recordAudit, type AuditActor } from "@/features/audit/service"
 import {
   PAGE_SIZE,
   type ActivatePlanInput,
@@ -261,6 +262,7 @@ export async function getOverview(now: Date = new Date()): Promise<Overview> {
  * tetap tersimpan), langganan baru dibuat, dan sekolah menjadi `active`.
  */
 export async function activatePlan(
+  actor: AuditActor,
   input: ActivatePlanInput,
   now: Date = new Date()
 ): Promise<void> {
@@ -271,7 +273,7 @@ export async function activatePlan(
   const slug = await platformDb(async (db) => {
     const school = await db.school.findFirst({
       where: { id: input.schoolId, deletedAt: null },
-      select: { id: true, slug: true },
+      select: { id: true, slug: true, status: true },
     })
     if (!school) throw new PlatformError("SCHOOL_NOT_FOUND")
 
@@ -301,6 +303,18 @@ export async function activatePlan(
       data: { status: "active" },
     })
 
+    await recordAudit(db, school.id, actor, {
+      action: "subscription.activate",
+      entity: "school",
+      entityId: school.id,
+      before: { status: school.status },
+      after: {
+        status: "active",
+        planCode: input.planCode,
+        period: input.period,
+      },
+    })
+
     return school.slug
   })
 
@@ -313,6 +327,7 @@ export async function activatePlan(
  * selain itu `readonly` (langganan sudah habis).
  */
 export async function setSuspended(
+  actor: AuditActor,
   schoolId: string,
   suspended: boolean,
   now: Date = new Date()
@@ -320,7 +335,7 @@ export async function setSuspended(
   const { status, slug } = await platformDb(async (db) => {
     const school = await db.school.findFirst({
       where: { id: schoolId, deletedAt: null },
-      select: { id: true, slug: true },
+      select: { id: true, slug: true, status: true },
     })
     if (!school) throw new PlatformError("SCHOOL_NOT_FOUND")
 
@@ -345,6 +360,13 @@ export async function setSuspended(
     }
 
     await db.school.update({ where: { id: schoolId }, data: { status: next } })
+    await recordAudit(db, schoolId, actor, {
+      action: suspended ? "school.suspend" : "school.reactivate",
+      entity: "school",
+      entityId: schoolId,
+      before: { status: school.status },
+      after: { status: next },
+    })
 
     return { status: next, slug: school.slug }
   })

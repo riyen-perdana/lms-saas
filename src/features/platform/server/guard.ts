@@ -31,5 +31,10 @@ export const platformAdminMiddleware = createMiddleware({
     throw new Response("Tidak punya akses", { status: 403 })
   }
 
-  return next({ context: { adminUserId: session.user.id } })
+  return next({
+    context: {
+      adminUserId: session.user.id,
+      actor: { userId: session.user.id, role: "platform_admin" as const },
+    },
+  })
 })

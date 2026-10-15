@@ -43,7 +43,7 @@ export const uploadImportFileFn = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const body = Buffer.from(await data.file.arrayBuffer())
     return toResult(() =>
-      startImport(context.schoolId, context.adminUserId, {
+      startImport(context.schoolId, context.actor, {
         kind: data.kind,
         fileName: data.file.name,
         body,

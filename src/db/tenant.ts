@@ -45,6 +45,7 @@ export const TENANT_MODELS = [
   "ParentLink",
   "ImportBatch",
   "ImportError",
+  "AuditLog",
 ] as const
 
 /** `Membership` -> `membership`, mengikuti aturan delegate Prisma Client. */

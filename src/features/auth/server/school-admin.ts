@@ -35,6 +35,10 @@ export const schoolAdminMiddleware = createMiddleware({
   }
 
   return next({
-    context: { schoolId: tenant.school.id, adminUserId: session.user.id },
+    context: {
+      schoolId: tenant.school.id,
+      adminUserId: session.user.id,
+      actor: { userId: session.user.id, role: "school_admin" as const },
+    },
   })
 })

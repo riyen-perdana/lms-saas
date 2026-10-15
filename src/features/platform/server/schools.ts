@@ -56,11 +56,11 @@ export const listPlansFn = createServerFn({ method: "GET" })
 export const activatePlanFn = createServerFn({ method: "POST" })
   .middleware([platformAdminMiddleware])
   .validator((data: unknown) => activatePlanSchema.parse(data))
-  .handler(({ data }) => toResult(() => activatePlan(data)))
+  .handler(({ data, context }) => toResult(() => activatePlan(context.actor, data)))
 
 export const setSuspendedFn = createServerFn({ method: "POST" })
   .middleware([platformAdminMiddleware])
   .validator((data: unknown) => suspendSchema.parse(data))
-  .handler(({ data }) =>
-    toResult(() => setSuspended(data.schoolId, data.suspended))
+  .handler(({ data, context }) =>
+    toResult(() => setSuspended(context.actor, data.schoolId, data.suspended))
   )

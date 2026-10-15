@@ -17,6 +17,7 @@ import { createHash, randomInt, randomUUID } from "node:crypto"
 import { hashPassword } from "better-auth/crypto"
 
 import { tenantDb, type TenantDb } from "@/db/tenant"
+import { recordAudit, type AuditActor } from "@/features/audit/service"
 
 export type ParentLinkErrorCode =
   | "NOT_FOUND"
@@ -241,19 +242,32 @@ export function createInvitesForClassroom(
 
 export function revokeLink(
   schoolId: string,
+  actor: AuditActor,
   linkId: string,
   now: Date = new Date()
 ) {
   return tenantDb(schoolId, async (db) => {
+    const link = await db.parentLink.findFirst({
+      where: { id: linkId, revokedAt: null },
+      select: { studentId: true, parentUserId: true },
+    })
     const { count } = await db.parentLink.updateMany({
       where: { id: linkId, revokedAt: null },
       data: { revokedAt: now },
     })
-    if (count === 0)
+    if (count === 0 || !link)
       throw new ParentLinkError(
         "NOT_FOUND",
         "Tautan atau kode tidak ditemukan."
       )
+
+    // Tanpa kode atau hash: hanya siswa dan akun orang tua yang tertaut.
+    await recordAudit(db, schoolId, actor, {
+      action: "parent_link.revoke",
+      entity: "parent_link",
+      entityId: linkId,
+      before: { studentId: link.studentId, parentUserId: link.parentUserId },
+    })
   })
 }
 

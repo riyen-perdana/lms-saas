@@ -33,6 +33,7 @@ if (!adminUrl) throw new Error("DATABASE_URL belum diisi; test integrasi butuh .
 
 const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) })
 const suffix = randomUUID().slice(0, 8)
+const ACTOR = { userId: randomUUID(), role: "school_admin" as const }
 
 const YEAR = {
   name: "2026/2027",
@@ -249,6 +250,7 @@ describe("menjalankan kenaikan", () => {
     await expect(
       runRollover(
         schoolAId,
+        ACTOR,
         promote({
           sourceSemesterId: ganjilId,
           names: { [kelasX1]: "XI-1", [kelasKosong]: "xi-1" },
@@ -261,9 +263,15 @@ describe("menjalankan kenaikan", () => {
   it("naik tingkat: rombel dan siswa pindah, yang tertinggi lulus", async () => {
     const result = await runRollover(
       schoolAId,
+      ACTOR,
       promote({ sourceSemesterId: ganjilId, names: { [kelasXI1]: "XII Unggulan" } })
     )
     expect(result).toEqual({ classroomsCreated: 3, studentsMoved: 3, graduated: 1 })
+    const logs = await admin.auditLog.findMany({
+      where: { schoolId: schoolAId, action: "rollover.run", entityId: nextGanjilId },
+    })
+    expect(logs).toHaveLength(1)
+    expect(logs[0].after).toEqual(result)
 
     const rooms = await roomsOf(schoolAId, nextGanjilId)
     expect(rooms.map((r) => [r.name, r.grade, r.enrollments.length])).toEqual([
@@ -292,7 +300,7 @@ describe("menjalankan kenaikan", () => {
 
   it("menjalankan lagi untuk semester tujuan yang sama ditolak", async () => {
     await expect(
-      runRollover(schoolAId, promote({ sourceSemesterId: ganjilId }))
+      runRollover(schoolAId, ACTOR, promote({ sourceSemesterId: ganjilId }))
     ).rejects.toMatchObject({ code: "INVALID", message: expect.stringContaining("sudah punya") })
     expect(await roomsOf(schoolAId, nextGanjilId)).toHaveLength(3)
   })
@@ -313,6 +321,7 @@ describe("menjalankan kenaikan", () => {
 
     const result = await runRollover(
       schoolAId,
+      ACTOR,
       promote({ sourceSemesterId: nextGanjilId, targetSemesterId: nextGenapId, mode: "same" })
     )
     expect(result.graduated).toBe(0)
@@ -345,7 +354,7 @@ describe("isolasi antar sekolah", () => {
       })
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
     await expect(
-      runRollover(schoolBId, {
+      runRollover(schoolBId, ACTOR, {
         sourceSemesterId: schoolBGanjil,
         targetSemesterId: nextGenapId,
         mode: "same",
@@ -360,7 +369,7 @@ describe("isolasi antar sekolah", () => {
     expect(board).toHaveLength(1)
     expect(board[0].semesters.reduce((n, s) => n + s.classroomCount, 0)).toBe(1)
 
-    const result = await runRollover(schoolBId, {
+    const result = await runRollover(schoolBId, ACTOR, {
       sourceSemesterId: schoolBGanjil,
       targetSemesterId: schoolBGenap,
       mode: "same",

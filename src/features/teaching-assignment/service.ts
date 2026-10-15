@@ -15,6 +15,7 @@
 //     ada penulisan setengah jadi.
 
 import { tenantDb } from "@/db/tenant"
+import { recordAudit, type AuditActor } from "@/features/audit/service"
 
 import type { CourseInput, HomeroomInput } from "./schema"
 
@@ -223,13 +224,30 @@ export async function createCourse(schoolId: string, input: CourseInput) {
   }
 }
 
-export async function removeCourse(schoolId: string, courseId: string) {
+export async function removeCourse(
+  schoolId: string,
+  actor: AuditActor,
+  courseId: string
+) {
   return tenantDb(schoolId, async (db) => {
+    const course = await db.course.findFirst({
+      where: { id: courseId, deletedAt: null },
+      select: { classroomId: true, subjectId: true, teacherId: true },
+    })
+    if (!course) throw new TeachingError("NOT_FOUND", "Kelas pembelajaran tidak ditemukan.")
+
     const { count } = await db.course.updateMany({
       where: { id: courseId, deletedAt: null },
       data: { deletedAt: new Date() },
     })
     if (count === 0) throw new TeachingError("NOT_FOUND", "Kelas pembelajaran tidak ditemukan.")
+
+    await recordAudit(db, schoolId, actor, {
+      action: "course.remove",
+      entity: "course",
+      entityId: courseId,
+      before: course,
+    })
   })
 }
 
@@ -291,7 +309,11 @@ export async function setHomeroomTeacher(schoolId: string, input: HomeroomInput)
 }
 
 /** Cabut wali kelas. Rombel tanpa wali bukan kondisi salah, jadi idempoten. */
-export async function clearHomeroomTeacher(schoolId: string, classroomId: string) {
+export async function clearHomeroomTeacher(
+  schoolId: string,
+  actor: AuditActor,
+  classroomId: string
+) {
   return tenantDb(schoolId, async (db) => {
     const classroom = await db.classroom.findFirst({
       where: { id: classroomId, deletedAt: null },
@@ -303,6 +325,12 @@ export async function clearHomeroomTeacher(schoolId: string, classroomId: string
     await db.classroom.update({
       where: { id: classroom.id },
       data: { homeroomTeacherId: null },
+    })
+    await recordAudit(db, schoolId, actor, {
+      action: "homeroom.clear",
+      entity: "classroom",
+      entityId: classroom.id,
+      before: { homeroomTeacherId: classroom.homeroomTeacherId },
     })
     return classroom.id
   })

@@ -125,7 +125,7 @@ export const revokeLinkFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => linkIdSchema.parse(data))
   .handler(({ data, context }) =>
     toResult(async () => {
-      await revokeLink(context.schoolId, data.linkId)
+      await revokeLink(context.schoolId, context.actor, data.linkId)
       return {}
     })
   )

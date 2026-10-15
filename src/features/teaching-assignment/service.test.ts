@@ -36,6 +36,7 @@ if (!adminUrl) throw new Error("DATABASE_URL belum diisi; test integrasi butuh .
 
 const admin = new PrismaClient({ adapter: new PrismaPg({ connectionString: adminUrl }) })
 const suffix = randomUUID().slice(0, 8)
+const ACTOR = { userId: randomUUID(), role: "school_admin" as const }
 
 const YEAR = {
   name: "2026/2027",
@@ -314,21 +315,26 @@ describe("kelas pembelajaran", () => {
   it("hapus: kelas pembelajaran hilang dari daftar dan boleh dibuat ulang", async () => {
     const course = await createCourse(schoolAId, input({ classroomId: kelasX2, subjectId: mapelBindo }))
 
-    await removeCourse(schoolAId, course.id)
+    await removeCourse(schoolAId, ACTOR, course.id)
     expect(await listCourses(schoolAId, ganjilId)).toHaveLength(3)
 
     // Soft delete: indeks unik parsial tidak lagi menolak mapel yang sama.
     const ulang = await createCourse(schoolAId, input({ classroomId: kelasX2, subjectId: mapelBindo }))
     expect(ulang.id).not.toBe(course.id)
 
-    await removeCourse(schoolAId, ulang.id)
+    await removeCourse(schoolAId, ACTOR, ulang.id)
   })
 
   it("menghapus yang sudah dihapus ditolak NOT_FOUND", async () => {
     const course = await createCourse(schoolAId, input({ classroomId: kelasX2, subjectId: mapelBindo }))
-    await removeCourse(schoolAId, course.id)
-    await expect(removeCourse(schoolAId, course.id)).rejects.toMatchObject({ code: "NOT_FOUND" })
-    await expect(removeCourse(schoolAId, randomUUID())).rejects.toMatchObject({
+    await removeCourse(schoolAId, ACTOR, course.id)
+    const logs = await admin.auditLog.findMany({
+      where: { schoolId: schoolAId, action: "course.remove", entityId: course.id },
+    })
+    expect(logs).toHaveLength(1)
+    expect(logs[0].actorUserId).toBe(ACTOR.userId)
+    await expect(removeCourse(schoolAId, ACTOR, course.id)).rejects.toMatchObject({ code: "NOT_FOUND" })
+    await expect(removeCourse(schoolAId, ACTOR, randomUUID())).rejects.toMatchObject({
       code: "NOT_FOUND",
     })
   })
@@ -385,8 +391,14 @@ describe("wali kelas", () => {
   })
 
   it("cabut wali kelas, dan mengabut lagi tidak error", async () => {
-    await clearHomeroomTeacher(schoolAId, kelasX1)
-    await expect(clearHomeroomTeacher(schoolAId, kelasX1)).resolves.toBe(kelasX1)
+    await clearHomeroomTeacher(schoolAId, ACTOR, kelasX1)
+    await expect(clearHomeroomTeacher(schoolAId, ACTOR, kelasX1)).resolves.toBe(kelasX1)
+    // Hanya pencabutan yang benar-benar mengubah data yang dicatat.
+    expect(
+      await admin.auditLog.count({
+        where: { schoolId: schoolAId, action: "homeroom.clear", entityId: kelasX1 },
+      })
+    ).toBe(1)
 
     const room = await tenantDb(schoolAId, (db) =>
       db.classroom.findFirstOrThrow({ where: { id: kelasX1 } })
@@ -394,7 +406,7 @@ describe("wali kelas", () => {
     expect(room.homeroomTeacherId).toBeNull()
     expect(await listHomerooms(schoolAId, ganjilId)).toHaveLength(0)
 
-    await clearHomeroomTeacher(schoolAId, kelasGenapX1)
+    await clearHomeroomTeacher(schoolAId, ACTOR, kelasGenapX1)
   })
 
   it("menolak rombel atau guru yang tidak ada", async () => {
@@ -404,7 +416,7 @@ describe("wali kelas", () => {
     await expect(
       setHomeroomTeacher(schoolAId, { classroomId: kelasX1, teacherId: randomUUID() })
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
-    await expect(clearHomeroomTeacher(schoolAId, randomUUID())).rejects.toMatchObject({
+    await expect(clearHomeroomTeacher(schoolAId, ACTOR, randomUUID())).rejects.toMatchObject({
       code: "NOT_FOUND",
     })
   })
@@ -464,7 +476,7 @@ describe("isolasi antar sekolah", () => {
     const [course] = await listCourses(schoolAId, ganjilId)
     const sebelum = await listCourses(schoolAId, ganjilId)
 
-    await expect(removeCourse(schoolBId, course.id)).rejects.toMatchObject({ code: "NOT_FOUND" })
+    await expect(removeCourse(schoolBId, ACTOR, course.id)).rejects.toMatchObject({ code: "NOT_FOUND" })
     expect(await listCourses(schoolAId, ganjilId)).toHaveLength(sebelum.length)
   })
 
@@ -473,7 +485,7 @@ describe("isolasi antar sekolah", () => {
     await expect(
       setHomeroomTeacher(schoolBId, { classroomId: kelasX1, teacherId: guruB })
     ).rejects.toMatchObject({ code: "NOT_FOUND" })
-    await expect(clearHomeroomTeacher(schoolBId, kelasX1)).rejects.toMatchObject({
+    await expect(clearHomeroomTeacher(schoolBId, ACTOR, kelasX1)).rejects.toMatchObject({
       code: "NOT_FOUND",
     })
 
@@ -482,7 +494,7 @@ describe("isolasi antar sekolah", () => {
     )
     expect(room.homeroomTeacherId).toBe(guruTiga)
 
-    await clearHomeroomTeacher(schoolAId, kelasX1)
+    await clearHomeroomTeacher(schoolAId, ACTOR, kelasX1)
   })
 
   it("RLS: tanpa konteks tenant, tabel courses tidak terlihat sama sekali", async () => {

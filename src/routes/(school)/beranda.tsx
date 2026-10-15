@@ -128,6 +128,12 @@ function SchoolHome() {
           >
             Tautan orang tua dan kode undangan
           </Link>
+          <Link
+            to="/audit"
+            className="text-ds-body text-primary underline-offset-4 hover:underline"
+          >
+            Log audit
+          </Link>
         </div>
       ) : null}
     </main>

@@ -41,6 +41,7 @@ const admin = new PrismaClient({
   adapter: new PrismaPg({ connectionString: adminUrl }),
 })
 const suffix = randomUUID().slice(0, 8)
+const ACTOR = { userId: randomUUID(), role: "school_admin" as const }
 
 const YEAR = {
   name: "2026/2027",
@@ -210,7 +211,14 @@ describe("membuat kode", () => {
     expect(JSON.stringify(rows)).not.toContain(normalizeCode(invite.code)!)
     expect(rows[0].parentUserId).toBeNull()
 
-    await revokeLink(schoolAId, rows[0].id)
+    await revokeLink(schoolAId, ACTOR, rows[0].id)
+
+    const logs = await admin.auditLog.findMany({
+      where: { schoolId: schoolAId, action: "parent_link.revoke", entityId: rows[0].id },
+    })
+    expect(logs).toHaveLength(1)
+    // Kode dan hash tidak boleh masuk log.
+    expect(JSON.stringify(logs)).not.toContain(rows[0].codeHash)
   })
 
   it("menolak siswa yang tidak ada atau milik sekolah lain", async () => {
@@ -237,7 +245,7 @@ describe("membuat kode", () => {
 
     for (const row of await linkRows(schoolAId, doni))
       if (!row.revokedAt) ids.push(row.id)
-    for (const id of ids) await revokeLink(schoolAId, id)
+    for (const id of ids) await revokeLink(schoolAId, ACTOR, id)
   })
 
   it("massal per rombel: hanya siswa tanpa tautan/kode, sisanya dilewati", async () => {
@@ -260,7 +268,7 @@ describe("membuat kode", () => {
 
     for (const studentId of [ani, budi, citra, doni]) {
       for (const row of await linkRows(schoolAId, studentId)) {
-        if (!row.revokedAt) await revokeLink(schoolAId, row.id)
+        if (!row.revokedAt) await revokeLink(schoolAId, ACTOR, row.id)
       }
     }
   })
@@ -341,7 +349,7 @@ describe("menukar kode", () => {
     const row = (await linkRows(schoolAId, doni)).find(
       (r) => r.codeHash === hashCode(schoolAId, normalizeCode(revoked.code)!)
     )!
-    await revokeLink(schoolAId, row.id)
+    await revokeLink(schoolAId, ACTOR, row.id)
     const revokedError = await redeemInvite(
       schoolAId,
       revoked.code,
@@ -515,12 +523,12 @@ describe("daftar dan pencabutan", () => {
       (r) => r.parentUserId === userId
     )!
 
-    await revokeLink(schoolAId, link.id)
+    await revokeLink(schoolAId, ACTOR, link.id)
     expect(await listChildren(schoolAId, userId)).toEqual([])
-    await expect(revokeLink(schoolAId, link.id)).rejects.toMatchObject({
+    await expect(revokeLink(schoolAId, ACTOR, link.id)).rejects.toMatchObject({
       code: "NOT_FOUND",
     })
-    await expect(revokeLink(schoolAId, randomUUID())).rejects.toMatchObject({
+    await expect(revokeLink(schoolAId, ACTOR, randomUUID())).rejects.toMatchObject({
       code: "NOT_FOUND",
     })
   })
@@ -572,7 +580,7 @@ describe("isolasi antar sekolah", () => {
     const link = (await linkRows(schoolAId, ani)).find(
       (r) => r.revokedAt === null
     )!
-    await expect(revokeLink(schoolBId, link.id)).rejects.toMatchObject({
+    await expect(revokeLink(schoolBId, ACTOR, link.id)).rejects.toMatchObject({
       code: "NOT_FOUND",
     })
     await expect(listClassroomLinks(schoolBId, kelasA)).rejects.toMatchObject({

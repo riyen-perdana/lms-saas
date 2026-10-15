@@ -57,7 +57,7 @@ export const runRolloverFn = createServerFn({ method: "POST" })
   .validator((data: unknown) => rolloverSchema.parse(data))
   .handler(
     ({ data, context }): Promise<RolloverActionResult<{ result: RolloverResult }>> =>
-      toResult(async () => ({ result: await runRollover(context.schoolId, data) }))
+      toResult(async () => ({ result: await runRollover(context.schoolId, context.actor, data) }))
   )
 
 export const activateSemesterFn = createServerFn({ method: "POST" })

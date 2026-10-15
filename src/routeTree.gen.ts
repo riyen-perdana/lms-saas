@@ -22,6 +22,7 @@ import { Route as marketingKontakRouteImport } from './routes/(marketing)/kontak
 import { Route as marketingPrivasiRouteImport } from './routes/(marketing)/privasi'
 import { Route as marketingSyaratRouteImport } from './routes/(marketing)/syarat'
 import { Route as platformPlatformRouteImport } from './routes/(platform)/platform'
+import { Route as schoolAuditRouteImport } from './routes/(school)/audit'
 import { Route as schoolBerandaRouteImport } from './routes/(school)/beranda'
 import { Route as schoolGabungRouteImport } from './routes/(school)/gabung'
 import { Route as schoolImporRouteImport } from './routes/(school)/impor'
@@ -101,6 +102,11 @@ const marketingSyaratRoute = marketingSyaratRouteImport.update({
 const platformPlatformRoute = platformPlatformRouteImport.update({
   id: '/(platform)/platform',
   path: '/platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const schoolAuditRoute = schoolAuditRouteImport.update({
+  id: '/(school)/audit',
+  path: '/audit',
   getParentRoute: () => rootRouteImport,
 } as any)
 const schoolBerandaRoute = schoolBerandaRouteImport.update({
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/privasi': typeof marketingPrivasiRoute
   '/syarat': typeof marketingSyaratRoute
   '/platform': typeof platformPlatformRouteWithChildren
+  '/audit': typeof schoolAuditRoute
   '/beranda': typeof schoolBerandaRoute
   '/gabung': typeof schoolGabungRoute
   '/impor': typeof schoolImporRoute
@@ -223,6 +230,7 @@ export interface FileRoutesByTo {
   '/kontak': typeof marketingKontakRoute
   '/privasi': typeof marketingPrivasiRoute
   '/syarat': typeof marketingSyaratRoute
+  '/audit': typeof schoolAuditRoute
   '/beranda': typeof schoolBerandaRoute
   '/gabung': typeof schoolGabungRoute
   '/impor': typeof schoolImporRoute
@@ -254,6 +262,7 @@ export interface FileRoutesById {
   '/(marketing)/privasi': typeof marketingPrivasiRoute
   '/(marketing)/syarat': typeof marketingSyaratRoute
   '/(platform)/platform': typeof platformPlatformRouteWithChildren
+  '/(school)/audit': typeof schoolAuditRoute
   '/(school)/beranda': typeof schoolBerandaRoute
   '/(school)/gabung': typeof schoolGabungRoute
   '/(school)/impor': typeof schoolImporRoute
@@ -286,6 +295,7 @@ export interface FileRouteTypes {
     | '/privasi'
     | '/syarat'
     | '/platform'
+    | '/audit'
     | '/beranda'
     | '/gabung'
     | '/impor'
@@ -315,6 +325,7 @@ export interface FileRouteTypes {
     | '/kontak'
     | '/privasi'
     | '/syarat'
+    | '/audit'
     | '/beranda'
     | '/gabung'
     | '/impor'
@@ -345,6 +356,7 @@ export interface FileRouteTypes {
     | '/(marketing)/privasi'
     | '/(marketing)/syarat'
     | '/(platform)/platform'
+    | '/(school)/audit'
     | '/(school)/beranda'
     | '/(school)/gabung'
     | '/(school)/impor'
@@ -376,6 +388,7 @@ export interface RootRouteChildren {
   marketingPrivasiRoute: typeof marketingPrivasiRoute
   marketingSyaratRoute: typeof marketingSyaratRoute
   platformPlatformRoute: typeof platformPlatformRouteWithChildren
+  schoolAuditRoute: typeof schoolAuditRoute
   schoolBerandaRoute: typeof schoolBerandaRoute
   schoolGabungRoute: typeof schoolGabungRoute
   schoolImporRoute: typeof schoolImporRoute
@@ -482,6 +495,13 @@ declare module '@tanstack/react-router' {
       path: '/platform'
       fullPath: '/platform'
       preLoaderRoute: typeof platformPlatformRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(school)/audit': {
+      id: '/(school)/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof schoolAuditRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(school)/beranda': {
@@ -620,6 +640,7 @@ const rootRouteChildren: RootRouteChildren = {
   marketingPrivasiRoute: marketingPrivasiRoute,
   marketingSyaratRoute: marketingSyaratRoute,
   platformPlatformRoute: platformPlatformRouteWithChildren,
+  schoolAuditRoute: schoolAuditRoute,
   schoolBerandaRoute: schoolBerandaRoute,
   schoolGabungRoute: schoolGabungRoute,
   schoolImporRoute: schoolImporRoute,

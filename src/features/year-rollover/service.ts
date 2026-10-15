@@ -18,6 +18,7 @@
 import { prisma } from "@/db/client"
 import { tenantDb, type TenantDb } from "@/db/tenant"
 import { GRADE_RANGES } from "@/features/academic/schema"
+import { recordAudit, type AuditActor } from "@/features/audit/service"
 
 import type { RolloverInput, RolloverPreviewInput } from "./schema"
 
@@ -233,6 +234,7 @@ export async function previewRollover(
 
 export async function runRollover(
   schoolId: string,
+  actor: AuditActor,
   input: RolloverInput
 ): Promise<RolloverResult> {
   const [, maxGrade] = await schoolGradeRange(schoolId)
@@ -296,7 +298,15 @@ export async function runRollover(
         .filter((row) => row.targetGrade === null)
         .reduce((sum, row) => sum + row.studentCount, 0)
 
-      return { classroomsCreated: plan.length, studentsMoved, graduated }
+      const result = { classroomsCreated: plan.length, studentsMoved, graduated }
+      await recordAudit(db, schoolId, actor, {
+        action: "rollover.run",
+        entity: "semester",
+        entityId: input.targetSemesterId,
+        before: { sourceSemesterId: input.sourceSemesterId, mode: input.mode },
+        after: result,
+      })
+      return result
     },
     { timeout: WRITE_TIMEOUT_MS }
   )

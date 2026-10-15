@@ -18,6 +18,7 @@ import { randomBytes } from "node:crypto"
 import { prisma } from "@/db/client"
 import { tenantDb, type TenantDb } from "@/db/tenant"
 import type { Gender, ImportKind } from "@/generated/prisma/enums"
+import { recordAudit, type AuditActor } from "@/features/audit/service"
 import { auth } from "@/lib/auth"
 import { enqueueImportBatch } from "@/lib/jobs"
 import { deleteFile, getFile, putFile, schoolKey } from "@/lib/storage"
@@ -116,7 +117,7 @@ function sourceStorageKey(schoolId: string, batchId: string): string {
  */
 export async function startImport(
   schoolId: string,
-  adminUserId: string,
+  actor: AuditActor,
   input: ImportUploadInput
 ): Promise<{ batchId: string }> {
   assertUpload(input)
@@ -130,18 +131,24 @@ export async function startImport(
   })
 
   try {
-    await tenantDb(schoolId, (db) =>
-      db.importBatch.create({
+    await tenantDb(schoolId, async (db) => {
+      await db.importBatch.create({
         data: {
           id: batchId,
           schoolId,
           kind: input.kind,
           status: "queued",
           fileName,
-          createdBy: adminUserId,
+          createdBy: actor.userId,
         },
       })
-    )
+      await recordAudit(db, schoolId, actor, {
+        action: "import.start",
+        entity: "import_batch",
+        entityId: batchId,
+        after: { kind: input.kind, fileName },
+      })
+    })
   } catch (error) {
     await deleteFile(schoolId, sourceStorageKey(schoolId, batchId))
     throw error
