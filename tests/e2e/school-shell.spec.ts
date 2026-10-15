@@ -108,6 +108,10 @@ test("admin melihat menu bergrup dan breadcrumb mengikuti halaman", async ({
 
   await page.getByRole("link", { name: "Audit", exact: true }).click()
   await expect(page).toHaveURL(/\/audit$/)
+  if (testInfo.project.name === "mobile-360") {
+    // Sheet sidebar mobile harus tertutup setelah memilih menu.
+    await expect(page.locator('[data-slot="sidebar"][data-mobile="true"]')).toHaveCount(0)
+  }
   const crumbs = page.locator('nav[aria-label="breadcrumb"]')
   await expect(crumbs).toContainText("Sistem")
   await expect(crumbs).toContainText("Audit")

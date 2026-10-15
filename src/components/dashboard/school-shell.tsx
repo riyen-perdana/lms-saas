@@ -42,9 +42,31 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { signOut } from "@/lib/auth-client"
 import { initials } from "@/lib/format"
+
+type NavEntry = ReturnType<typeof navForRole>[number]["items"][number]
+
+// Item menu: menutup sheet sidebar mobile saat dipilih (SidebarProvider tetap
+// hidup antar navigasi, jadi sheet tidak menutup sendiri). Klik juga terpicu
+// oleh Enter di keyboard.
+function NavItem({ item, active }: { item: NavEntry; active: boolean }) {
+  const { setOpenMobile } = useSidebar()
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        isActive={active}
+        render={<Link to={item.to} />}
+        onClick={() => setOpenMobile(false)}
+      >
+        <item.icon aria-hidden />
+        <span>{item.label}</span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  )
+}
 
 export function SchoolShell({
   schoolName,
@@ -95,18 +117,14 @@ export function SchoolShell({
               <SidebarGroupContent>
                 <SidebarMenu>
                   {group.items.map((item) => (
-                    <SidebarMenuItem key={item.to}>
-                      <SidebarMenuButton
-                        isActive={
-                          pathname === item.to ||
-                          pathname.startsWith(`${item.to}/`)
-                        }
-                        render={<Link to={item.to} />}
-                      >
-                        <item.icon aria-hidden />
-                        <span>{item.label}</span>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                    <NavItem
+                      key={item.to}
+                      item={item}
+                      active={
+                        pathname === item.to ||
+                        pathname.startsWith(`${item.to}/`)
+                      }
+                    />
                   ))}
                 </SidebarMenu>
               </SidebarGroupContent>
