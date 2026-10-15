@@ -145,11 +145,16 @@ test("admin mereset sandi guru dari /pengguna, siswa tidak bisa direset", async 
   const main = page.getByRole("main")
   await expect(main.getByRole("heading", { name: "Pengguna" })).toBeVisible()
 
-  // Siswa tampil tanpa tombol reset.
+  // Siswa tampil dengan tombol PIN, tanpa tombol reset sandi guru.
   const siswa = main.getByRole("row", { name: /Siswa Uji/ })
   await expect(siswa).toBeVisible()
-  await expect(siswa.getByRole("button")).toHaveCount(0)
-  await expect(siswa.getByText(/setelah login NIS\+PIN/)).toBeVisible()
+  await expect(siswa.getByRole("button")).toHaveCount(1)
+  await expect(
+    siswa.getByRole("button", { name: "Buat PIN Siswa Uji" })
+  ).toBeVisible()
+  await expect(
+    siswa.getByRole("button", { name: /Reset sandi/ })
+  ).toHaveCount(0)
 
   // Cari guru, reset, konfirmasi.
   await expect(main.getByRole("button", { name: "Cari", exact: true })).toBeEnabled()
