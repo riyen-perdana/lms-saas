@@ -131,6 +131,7 @@ model School {
   students      Student[]
   enrollments   Enrollment[]
   courses       Course[]
+  parentLinks   ParentLink[]
   importBatches ImportBatch[]
   importErrors  ImportError[]
 
@@ -177,6 +178,7 @@ model User {
   platformAdmin   PlatformAdmin?
   teacherProfiles Teacher[]
   studentProfiles Student[]
+  parentLinks     ParentLink[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -481,6 +483,7 @@ model Student {
   school      School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   enrollments Enrollment[]
+  parentLinks ParentLink[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -509,6 +512,34 @@ model Enrollment {
   @@index([schoolId, studentId])
   @@index([schoolId, classroomId])
   @@map("enrollments")
+}
+
+/// Undangan dan tautan orang tua <-> siswa (OB-05). Satu baris = satu undangan;
+/// setelah kode ditukar, `parent_user_id` terisi dan baris menjadi tautan.
+/// Kode asli TIDAK disimpan, hanya hash SHA-256 (`code_hash`), jadi hanya
+/// terlihat sekali saat dibuat. Unik per orang tua per siswa selama belum
+/// dicabut dijamin indeks unik parsial di migrasi.
+model ParentLink {
+  id            String    @id @default(uuid(7)) @db.Uuid
+  schoolId      String    @map("school_id") @db.Uuid
+  studentId     String    @map("student_id") @db.Uuid
+  parentUserId  String?   @map("parent_user_id") @db.Uuid
+  codeHash      String    @map("code_hash") @db.VarChar(64)
+  codeExpiresAt DateTime  @map("code_expires_at") @db.Timestamptz(6)
+  linkedAt      DateTime? @map("linked_at") @db.Timestamptz(6)
+  revokedAt     DateTime? @map("revoked_at") @db.Timestamptz(6)
+
+  school     School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  student    Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  parentUser User?   @relation(fields: [parentUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([schoolId, codeHash])
+  @@index([schoolId, studentId])
+  @@index([schoolId, parentUserId])
+  @@map("parent_links")
 }
 
 /// Kelas pembelajaran (OB-03): satu kombinasi rombel x mapel x guru pada satu

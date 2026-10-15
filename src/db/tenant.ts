@@ -42,6 +42,7 @@ export const TENANT_MODELS = [
   "Student",
   "Enrollment",
   "Course",
+  "ParentLink",
   "ImportBatch",
   "ImportError",
 ] as const

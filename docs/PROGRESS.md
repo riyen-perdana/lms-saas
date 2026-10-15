@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
 Terakhir diperbarui: 2026-10-15
-Pemeriksaan: typecheck, lint, 220 test unit, 81 E2E (Playwright, 1 skipped), dan `pnpm build` hijau.
+Pemeriksaan: typecheck, lint, 250 test unit, 85 E2E (Playwright, 1 skipped), dan `pnpm build` hijau.
 
 ## Status per fase (PRD §10)
 
@@ -9,7 +9,7 @@ Pemeriksaan: typecheck, lint, 220 test unit, 81 E2E (Playwright, 1 skipped), dan
 | --- | --- |
 | F0 Fondasi | **Selesai** — tenant, RLS, Better Auth, login per subdomain, CI |
 | F1 Landing & registrasi | **Selesai** (utang di bawah) |
-| F2 Onboarding & pengguna | **Berjalan** — OB-01 s.d. OB-04 selesai; sisa OB-05, US-01 (login siswa SD via NIS+PIN), US-04 |
+| F2 Onboarding & pengguna | **Berjalan** — OB-01 s.d. OB-05 selesai; sisa US-01 (login siswa SD via NIS+PIN), US-04 |
 
 ### Sudah jadi di F0–F1
 - Resolusi subdomain, `tenantDb` + RLS, test isolasi antar sekolah
@@ -33,8 +33,9 @@ Pemeriksaan: typecheck, lint, 220 test unit, 81 E2E (Playwright, 1 skipped), dan
 - OB-02 selesai: impor guru & siswa dari `.xlsx` (template diunduh dari `/impor`), tabel `teachers`, `students`, `enrollments`, `import_batches`, `import_errors` (RLS + index parsial unik kode guru/NIS), service + worker pg-boss di `src/features/people-import`, halaman `/impor`, route unduhan `/api/impor-template` dan `/api/laporan-impor/$batchId`
 - OB-03 selesai: tabel `courses` (kelas pembelajaran = rombel x mapel x guru x semester) + kolom `classrooms.homeroom_teacher_id` (RLS, indeks parsial unik), service + server function di `src/features/teaching-assignment`, halaman `/penugasan` (tabel kelas pembelajaran semester aktif, filter per rombel, form tambah, daftar wali kelas per rombel)
 - OB-04 selesai: kenaikan kelas / pergantian semester di `src/features/year-rollover` (tanpa migrasi baru), halaman `/tahun-ajaran` (daftar semester + aktifkan, tambah tahun ajaran berikutnya, panel kenaikan: sumber -> tujuan -> pratinjau -> jalankan)
+- OB-05 selesai: tabel `parent_links` (RLS, indeks unik parsial), modul `src/features/parent-link`, halaman admin `/orang-tua` (kode per siswa + massal per rombel -> CSV, cabut) dan halaman publik `/gabung` (orang tua mendaftar/menautkan lewat kode); beranda orang tua menampilkan anak tertaut
 - Server function sekolah memakai `schoolAdminMiddleware` (login, peran school_admin, tolak suspended/readonly)
-- Belum: kode undangan orang tua (OB-05), daftar/ubah data guru & siswa di UI (OB-02 baru impor), log audit (US-04)
+- Belum: daftar/ubah data guru & siswa di UI (OB-02 baru impor), log audit (US-04)
 - E2E mematikan devtools lewat `VITE_E2E`; matikan server dev manual sebelum `pnpm test:e2e` agar tidak dipakai ulang
 
 ## Akun dev
@@ -66,6 +67,9 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - OB-04: kenaikan = membuat rombel di semester tujuan + enrollment baru; rombel/enrollment lama tidak disentuh (itu arsipnya). Mode `same` (tingkat tetap, Ganjil->Genap) dan `promote` (tingkat+1; tingkat tertinggi jenjang = lulus, tanpa enrollment baru; belum ada status lulus di profil siswa)
 - OB-04: wali kelas dan kelas pembelajaran SENGAJA tidak disalin (mapel/guru beda per tingkat); admin menetapkan ulang di `/penugasan`. Semester tujuan harus kosong dan setelah sumber; dijalankan dua kali ditolak (advisory lock transaksi mencegah dua admin bersamaan). Semester tujuan tidak otomatis aktif
 - OB-04: usulan nama rombel hanya mengganti angka/romawi tingkat di awal nama ("X-1"->"XI-1"); selain itu nama dibiarkan dan disunting admin di pratinjau
+- OB-05: kode 8 karakter (alfabet tanpa 0/O/1/I), hanya hash SHA-256 (`schoolId:kode`) yang disimpan, jadi kode hanya terlihat sekali saat dibuat; berlaku 14 hari, sekali pakai, maks 5 baris aktif per siswa. Kode salah/kedaluwarsa/terpakai/dicabut/milik sekolah lain memberi pesan SAMA. Penukaran atomik (update bersyarat) dan satu transaksi untuk akun + membership + tautan
+- OB-05: pendaftaran orang tua tidak otomatis login (diarahkan ke /login); email orang tua belum diverifikasi (sama seperti keputusan verifikasi email lain). Email yang sudah terdaftar diminta login dulu; akun berperan lain di sekolah yang sama (mis. guru) ditolak. Batas laju penukaran: per IP (`PARENT_JOIN_RATE_LIMIT`, default 10/15 menit) + per sekolah 300/jam; `clientAddress` memercayai `x-forwarded-for`, jadi di produksi aplikasi harus di belakang proxy tepercaya
+- OB-05: portal nilai orang tua tetap F5; saat ini orang tua hanya melihat nama anak + rombel di /beranda. Beranda kini menampilkan menu admin hanya untuk `school_admin`
 - OB-03: Error memakai kode yang sama dengan modul lain: `INVALID | DUPLICATE | NOT_FOUND` di `TeachingError`
 - OB-02: impor memvalidasi tiap baris dan berhenti di batch yang gagal total (sheet/judul kolom salah, berkas rusak); baris cacat lain hanya jadi baris gagal, tidak membatalkan impor.
 - OB-02: baris duplikat (dalam berkas, huruf besar/kecil berbeda, atau sudah ada di sekolah) **ditolak**, bukan menimpa. Impor ulang setelah koreksi aman; konsekuensinya perbaikan data harus lewat modul lain (belum ada UI ubah).
@@ -81,6 +85,7 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 ## Utang / belum ada
 - Email pemberitahuan trial segera berakhir; penyedia email nyata (hanya driver `console`/`memory`)
 - UI daftar/ubah/hapus data guru & siswa (OB-02 baru mengimpor; belum ada layar daftar, pencarian, atau ubah data)
+- Daftar siswa umum di UI admin (OB-05 hanya menampilkan siswa per rombel); kode undangan lama tidak bisa ditampilkan ulang (buat baru)
 - Tinggal kelas / pindah rombel per siswa (butuh UI daftar siswa); status lulus pada profil siswa (OB-04)
 - Pemilih semester di `/penugasan` (OB-03) — belum ada kelas pembelajaran untuk semester lampau
 - Kuota jumlah siswa per paket belum dicek saat impor (ikut dikerjakan di BL-01/F7)

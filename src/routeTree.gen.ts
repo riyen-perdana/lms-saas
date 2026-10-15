@@ -23,7 +23,9 @@ import { Route as marketingPrivasiRouteImport } from './routes/(marketing)/priva
 import { Route as marketingSyaratRouteImport } from './routes/(marketing)/syarat'
 import { Route as platformPlatformRouteImport } from './routes/(platform)/platform'
 import { Route as schoolBerandaRouteImport } from './routes/(school)/beranda'
+import { Route as schoolGabungRouteImport } from './routes/(school)/gabung'
 import { Route as schoolImporRouteImport } from './routes/(school)/impor'
+import { Route as schoolOrangTuaRouteImport } from './routes/(school)/orang-tua'
 import { Route as schoolPenugasanRouteImport } from './routes/(school)/penugasan'
 import { Route as schoolSetupRouteImport } from './routes/(school)/setup'
 import { Route as schoolTahunAjaranRouteImport } from './routes/(school)/tahun-ajaran'
@@ -106,9 +108,19 @@ const schoolBerandaRoute = schoolBerandaRouteImport.update({
   path: '/beranda',
   getParentRoute: () => rootRouteImport,
 } as any)
+const schoolGabungRoute = schoolGabungRouteImport.update({
+  id: '/(school)/gabung',
+  path: '/gabung',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const schoolImporRoute = schoolImporRouteImport.update({
   id: '/(school)/impor',
   path: '/impor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const schoolOrangTuaRoute = schoolOrangTuaRouteImport.update({
+  id: '/(school)/orang-tua',
+  path: '/orang-tua',
   getParentRoute: () => rootRouteImport,
 } as any)
 const schoolPenugasanRoute = schoolPenugasanRouteImport.update({
@@ -183,7 +195,9 @@ export interface FileRoutesByFullPath {
   '/syarat': typeof marketingSyaratRoute
   '/platform': typeof platformPlatformRouteWithChildren
   '/beranda': typeof schoolBerandaRoute
+  '/gabung': typeof schoolGabungRoute
   '/impor': typeof schoolImporRoute
+  '/orang-tua': typeof schoolOrangTuaRoute
   '/penugasan': typeof schoolPenugasanRoute
   '/setup': typeof schoolSetupRoute
   '/tahun-ajaran': typeof schoolTahunAjaranRoute
@@ -210,7 +224,9 @@ export interface FileRoutesByTo {
   '/privasi': typeof marketingPrivasiRoute
   '/syarat': typeof marketingSyaratRoute
   '/beranda': typeof schoolBerandaRoute
+  '/gabung': typeof schoolGabungRoute
   '/impor': typeof schoolImporRoute
+  '/orang-tua': typeof schoolOrangTuaRoute
   '/penugasan': typeof schoolPenugasanRoute
   '/setup': typeof schoolSetupRoute
   '/tahun-ajaran': typeof schoolTahunAjaranRoute
@@ -239,7 +255,9 @@ export interface FileRoutesById {
   '/(marketing)/syarat': typeof marketingSyaratRoute
   '/(platform)/platform': typeof platformPlatformRouteWithChildren
   '/(school)/beranda': typeof schoolBerandaRoute
+  '/(school)/gabung': typeof schoolGabungRoute
   '/(school)/impor': typeof schoolImporRoute
+  '/(school)/orang-tua': typeof schoolOrangTuaRoute
   '/(school)/penugasan': typeof schoolPenugasanRoute
   '/(school)/setup': typeof schoolSetupRoute
   '/(school)/tahun-ajaran': typeof schoolTahunAjaranRoute
@@ -269,7 +287,9 @@ export interface FileRouteTypes {
     | '/syarat'
     | '/platform'
     | '/beranda'
+    | '/gabung'
     | '/impor'
+    | '/orang-tua'
     | '/penugasan'
     | '/setup'
     | '/tahun-ajaran'
@@ -296,7 +316,9 @@ export interface FileRouteTypes {
     | '/privasi'
     | '/syarat'
     | '/beranda'
+    | '/gabung'
     | '/impor'
+    | '/orang-tua'
     | '/penugasan'
     | '/setup'
     | '/tahun-ajaran'
@@ -324,7 +346,9 @@ export interface FileRouteTypes {
     | '/(marketing)/syarat'
     | '/(platform)/platform'
     | '/(school)/beranda'
+    | '/(school)/gabung'
     | '/(school)/impor'
+    | '/(school)/orang-tua'
     | '/(school)/penugasan'
     | '/(school)/setup'
     | '/(school)/tahun-ajaran'
@@ -353,7 +377,9 @@ export interface RootRouteChildren {
   marketingSyaratRoute: typeof marketingSyaratRoute
   platformPlatformRoute: typeof platformPlatformRouteWithChildren
   schoolBerandaRoute: typeof schoolBerandaRoute
+  schoolGabungRoute: typeof schoolGabungRoute
   schoolImporRoute: typeof schoolImporRoute
+  schoolOrangTuaRoute: typeof schoolOrangTuaRoute
   schoolPenugasanRoute: typeof schoolPenugasanRoute
   schoolSetupRoute: typeof schoolSetupRoute
   schoolTahunAjaranRoute: typeof schoolTahunAjaranRoute
@@ -465,11 +491,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof schoolBerandaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(school)/gabung': {
+      id: '/(school)/gabung'
+      path: '/gabung'
+      fullPath: '/gabung'
+      preLoaderRoute: typeof schoolGabungRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(school)/impor': {
       id: '/(school)/impor'
       path: '/impor'
       fullPath: '/impor'
       preLoaderRoute: typeof schoolImporRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(school)/orang-tua': {
+      id: '/(school)/orang-tua'
+      path: '/orang-tua'
+      fullPath: '/orang-tua'
+      preLoaderRoute: typeof schoolOrangTuaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(school)/penugasan': {
@@ -581,7 +621,9 @@ const rootRouteChildren: RootRouteChildren = {
   marketingSyaratRoute: marketingSyaratRoute,
   platformPlatformRoute: platformPlatformRouteWithChildren,
   schoolBerandaRoute: schoolBerandaRoute,
+  schoolGabungRoute: schoolGabungRoute,
   schoolImporRoute: schoolImporRoute,
+  schoolOrangTuaRoute: schoolOrangTuaRoute,
   schoolPenugasanRoute: schoolPenugasanRoute,
   schoolSetupRoute: schoolSetupRoute,
   schoolTahunAjaranRoute: schoolTahunAjaranRoute,
