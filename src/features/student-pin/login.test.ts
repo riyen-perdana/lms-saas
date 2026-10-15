@@ -161,6 +161,12 @@ describe("loginWithStudentPin", () => {
     for (let i = 0; i < STUDENT_LOGIN_LIMITS.perNisIp.limit + 3; i++) {
       await loginWithStudentPin({ host, ip: same, nis: "7001", pin: aniPin })
     }
+    const row = await prisma.rateLimit.findUnique({
+      where: {
+        key: `${STUDENT_LOGIN_LIMITS.perNisIp.bucket}:${schoolId}:7001:${same}`,
+      },
+    })
+    expect(row?.count ?? 0).toBe(0)
   })
 
   it("batas per IP: 60 kegagalan di berbagai NIS mengunci IP itu", async () => {

@@ -61,6 +61,16 @@ export const auth = betterAuth({
     database: { generateId: () => uuidv7() },
     useSecureCookies: isProduction,
   },
+  // Pembatas bawaan Better Auth (aktif di produksi) memberi 3 permintaan/10 dtk
+  // per IP+path untuk semua path /sign-in*. Di belakang proxy tanpa
+  // `advanced.ipAddress` yang dikonfigurasi, semua klien berbagi satu bucket
+  // "no-trusted-ip", sehingga satu kelas siswa di IP sekolah yang sama akan
+  // terblokir. Login PIN sudah dibatasi pembatas DB sendiri (login.ts, per
+  // NIS+IP / IP / NIS), jadi pembatas bawaan dimatikan khusus path ini.
+  // Login email TETAP memakai batas bawaan (lihat docs/PROGRESS.md).
+  rateLimit: {
+    customRules: { "/sign-in/student-pin": false },
+  },
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,

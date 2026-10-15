@@ -181,6 +181,7 @@ function LoginPage() {
               key={key}
               type="button"
               role="tab"
+              disabled={!ready}
               aria-selected={mode === key}
               onClick={() => switchMode(key)}
               className={`-mb-px border-b-2 px-3 py-2 text-ds-body ${
@@ -237,46 +238,51 @@ function LoginPage() {
           </Button>
         </form>
       ) : (
-      <form method="post" onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="username"
-            required
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Kata sandi</Label>
-            <Link
-              to="/lupa-sandi"
-              className="text-ds-meta text-muted-foreground underline underline-offset-4"
-            >
-              Lupa kata sandi?
-            </Link>
+        <form
+          method="post"
+          onSubmit={onSubmit}
+          className="flex flex-col gap-4"
+          noValidate
+        >
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="username"
+              required
+            />
           </div>
-          <Input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            required
-          />
-        </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Kata sandi</Label>
+              <Link
+                to="/lupa-sandi"
+                className="text-ds-meta text-muted-foreground underline underline-offset-4"
+              >
+                Lupa kata sandi?
+              </Link>
+            </div>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              required
+            />
+          </div>
 
-        {error ? (
-          <p role="alert" className="text-ds-body text-destructive">
-            {error}
-          </p>
-        ) : null}
+          {error ? (
+            <p role="alert" className="text-ds-body text-destructive">
+              {error}
+            </p>
+          ) : null}
 
-        <Button type="submit" disabled={pending || !ready}>
-          {pending ? "Memproses..." : "Masuk"}
-        </Button>
-      </form>
+          <Button type="submit" disabled={pending || !ready}>
+            {pending ? "Memproses..." : "Masuk"}
+          </Button>
+        </form>
       )}
     </main>
   )

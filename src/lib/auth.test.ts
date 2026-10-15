@@ -105,7 +105,9 @@ describe("Better Auth", () => {
     expect(session?.user.email).toBe(email)
     expect(isUuidV7(session?.session.id ?? "")).toBe(true)
 
-    const tanpaCookie = await auth.api.getSession({ headers: new Headers({ host: "sekolah-a.localhost:3000" }) })
+    const tanpaCookie = await auth.api.getSession({
+      headers: new Headers({ host: "sekolah-a.localhost:3000" }),
+    })
     expect(tanpaCookie).toBeNull()
   })
 
@@ -121,5 +123,14 @@ describe("Better Auth", () => {
     } else {
       expect(res).toBeInstanceOf(Error)
     }
+  })
+})
+
+describe("pembatas laju bawaan Better Auth", () => {
+  it("dimatikan untuk /sign-in/student-pin, path /sign-in lain tidak diubah", async () => {
+    const ctx = await auth.$context
+    const rules = ctx.rateLimit.customRules ?? {}
+    expect(rules["/sign-in/student-pin"]).toBe(false)
+    expect(Object.keys(rules)).toEqual(["/sign-in/student-pin"])
   })
 })

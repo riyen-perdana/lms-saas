@@ -62,17 +62,34 @@ export async function loginWithStudentPin(
   // Jatah dicadangkan secara atomik SEBELUM verifikasi (ledakan permintaan
   // paralel tidak bisa lolos), lalu dikembalikan bila login berhasil.
   const reserved: [RateLimitRule, string][] = []
-  const releaseAll = () =>
-    Promise.all(
-      reserved.map(([rule, subject]) => releaseRateLimit(rule, subject))
+  // Pelepasan tidak boleh menutupi galat/hasil asli: kegagalan hanya dicatat.
+  const release = async (list: [RateLimitRule, string][]) => {
+    const settled = await Promise.allSettled(
+      list.map(([rule, subject]) => releaseRateLimit(rule, subject))
     )
+    for (const item of settled) {
+      if (item.status === "rejected") {
+        console.error(
+          "[student-pin] gagal mengembalikan jatah laju:",
+          item.reason
+        )
+      }
+    }
+  }
+  const releaseAll = () => release(reserved)
 
   try {
     for (const check of checks) {
-      // consumeRateLimit menambah hitungan sebelum melempar, jadi yang menolak
-      // juga ikut dicatat supaya ikut dikembalikan.
+      try {
+        await consumeRateLimit(...check)
+      } catch (error) {
+        // consumeRateLimit menambah hitungan sebelum melempar RateLimitError,
+        // jadi hanya yang menolak ikut dikembalikan; galat lain (mis. DB)
+        // berarti jatah ini tidak pernah dicadangkan.
+        if (error instanceof RateLimitError) reserved.push(check)
+        throw error
+      }
       reserved.push(check)
-      await consumeRateLimit(...check)
     }
   } catch (error) {
     await releaseAll()
