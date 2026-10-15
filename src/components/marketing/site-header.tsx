@@ -27,24 +27,22 @@ export function Brand() {
 export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-      <Container className="flex h-14 items-center justify-between gap-4">
-        <div className="flex items-center gap-8">
-          <a href="/" aria-label="EduSaaS — beranda">
-            <Brand />
-          </a>
-          <nav aria-label="Utama" className="hidden items-center gap-5 md:flex">
-            {NAV.map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-        </div>
-        <div className="flex items-center gap-2">
+      <Container className="grid h-14 grid-cols-[1fr_auto] items-center gap-4 md:grid-cols-[1fr_auto_1fr]">
+        <a href="/" aria-label="EduSaaS — beranda" className="justify-self-start">
+          <Brand />
+        </a>
+        <nav aria-label="Utama" className="hidden items-center gap-5 md:flex">
+          {NAV.map((item) => (
+            <a
+              key={item.href}
+              href={item.href}
+              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+        <div className="flex items-center gap-2 justify-self-end">
           <Link
             to="/login"
             className={cn(buttonVariants({ variant: "ghost" }), "rounded-md")}

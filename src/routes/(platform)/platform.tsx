@@ -1,4 +1,5 @@
-// Layout dashboard Super Admin (area platform: app.<domain>).
+// Layout dashboard Super Admin (area platform: app.<domain>), gaya template SKPI:
+// sidebar kiri + topbar breadcrumb.
 // Penjaga akses ada di beforeLoad (UX: arahkan ke login) DAN di setiap server
 // function lewat platformAdminMiddleware (keamanan sebenarnya).
 
@@ -9,12 +10,47 @@ import {
   createFileRoute,
   redirect,
   useNavigate,
+  useRouterState,
 } from "@tanstack/react-router"
+import {
+  ChevronsUpDown,
+  GraduationCap,
+  LayoutGrid,
+  LogOut,
+  School,
+} from "lucide-react"
 
-import { Button } from "@/components/ui/button"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Separator } from "@/components/ui/separator"
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarInset,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
 import { getAccess } from "@/features/auth/server/access"
 import { signOut } from "@/lib/auth-client"
-import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/(platform)/platform")({
   beforeLoad: async () => {
@@ -29,15 +65,41 @@ export const Route = createFileRoute("/(platform)/platform")({
   component: PlatformLayout,
 })
 
-const NAV = [
-  { to: "/platform", label: "Ringkasan", exact: true },
-  { to: "/platform/sekolah", label: "Sekolah", exact: false },
+const NAV_GROUPS = [
+  {
+    label: "Utama",
+    items: [
+      { to: "/platform", label: "Beranda", exact: true, icon: LayoutGrid },
+    ],
+  },
+  {
+    label: "Platform",
+    items: [
+      { to: "/platform/sekolah", label: "Sekolah", exact: false, icon: School },
+    ],
+  },
 ] as const
+
+function initials(name: string): string {
+  return name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0].toUpperCase())
+    .join("")
+}
 
 function PlatformLayout() {
   const { admin } = Route.useRouteContext()
   const navigate = useNavigate()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
   const [leaving, setLeaving] = useState(false)
+
+  const isActive = (to: string, exact: boolean) =>
+    exact ? pathname === to : pathname === to || pathname.startsWith(`${to}/`)
+
+  const inSchools = pathname.startsWith("/platform/sekolah")
+  const isSchoolDetail = pathname.startsWith("/platform/sekolah/")
 
   async function onSignOut() {
     setLeaving(true)
@@ -50,48 +112,109 @@ function PlatformLayout() {
   }
 
   return (
-    <div className="min-h-svh bg-background text-foreground">
-      <header className="border-b border-border">
-        <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
-          <div className="flex items-center gap-6">
-            <span className="text-ds-body font-semibold whitespace-nowrap">
-              EduSaaS
-              <span className="hidden sm:inline"> · Super Admin</span>
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarHeader className="gap-0.5 px-4 pt-4 pb-2">
+          <span className="flex items-center gap-2 text-ds-body font-semibold">
+            <span className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
+              <GraduationCap className="size-3.5" aria-hidden />
             </span>
-            <nav aria-label="Utama" className="flex items-center gap-1">
-              {NAV.map((item) => (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  activeOptions={{ exact: item.exact }}
-                  className="rounded-md px-2.5 py-1.5 text-ds-body text-muted-foreground transition-colors hover:text-foreground"
-                  activeProps={{
-                    className: cn("bg-muted font-medium text-foreground"),
-                  }}
+            EduSaaS
+          </span>
+          <span className="text-ds-meta text-muted-foreground">
+            Panel Super Admin
+          </span>
+        </SidebarHeader>
+
+        <SidebarContent>
+          {NAV_GROUPS.map((group) => (
+            <SidebarGroup key={group.label}>
+              <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.items.map((item) => (
+                    <SidebarMenuItem key={item.to}>
+                      <SidebarMenuButton
+                        isActive={isActive(item.to, item.exact)}
+                        render={<Link to={item.to} />}
+                      >
+                        <item.icon aria-hidden />
+                        <span>{item.label}</span>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+        </SidebarContent>
+
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={<SidebarMenuButton size="lg" />}
+                  disabled={leaving}
                 >
-                  {item.label}
-                </Link>
-              ))}
-            </nav>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-ds-meta text-muted-foreground sm:inline">
-              {admin.email}
-            </span>
-            <Button
-              variant="outline"
-              className="rounded-md"
-              onClick={onSignOut}
-              disabled={leaving}
-            >
-              Keluar
-            </Button>
-          </div>
-        </div>
-      </header>
-      <main className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8">
-        <Outlet />
-      </main>
-    </div>
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-ds-meta font-medium">
+                    {initials(admin.name)}
+                  </span>
+                  <span className="flex min-w-0 flex-1 flex-col text-left">
+                    <span className="truncate text-ds-body font-medium">
+                      {admin.name}
+                    </span>
+                    <span className="truncate text-ds-meta text-muted-foreground">
+                      Super Administrator
+                    </span>
+                  </span>
+                  <ChevronsUpDown className="ml-auto size-4" aria-hidden />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="top" align="start">
+                  <DropdownMenuItem onClick={onSignOut}>
+                    <LogOut aria-hidden />
+                    Keluar
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+
+      <SidebarInset>
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border px-4">
+          <SidebarTrigger aria-label="Buka/tutup sidebar" />
+          <Separator orientation="vertical" className="h-4" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              {isSchoolDetail ? (
+                <>
+                  <BreadcrumbItem>
+                    <Link
+                      to="/platform/sekolah"
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      Sekolah
+                    </Link>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Detail</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </>
+              ) : (
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{inSchools ? "Sekolah" : "Beranda"}</BreadcrumbPage>
+                </BreadcrumbItem>
+              )}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
+        <main className="flex flex-col gap-6 p-6">
+          <Outlet />
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
