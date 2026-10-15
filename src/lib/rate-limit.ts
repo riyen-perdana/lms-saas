@@ -48,24 +48,20 @@ export async function consumeRateLimit(
 }
 
 /**
- * Memeriksa `subject` TANPA menambah hitungan. Melempar RateLimitError bila
- * batas sudah tercapai dan jendelanya belum lewat. Dipakai bersama
- * `consumeRateLimit` untuk batas yang hanya menghitung kegagalan (login PIN):
- * cek dulu, catat setelah gagal.
+ * Mengembalikan satu jatah yang sebelumnya dicadangkan dengan
+ * `consumeRateLimit` (mis. login berhasil, atau permintaan yang ditolak).
+ * Pengurangan atomik, tidak di bawah nol, dan hanya selama jendela masih
+ * terbuka (jendela yang sudah lewat akan dimulai ulang oleh consume).
  */
-export async function assertRateLimit(
+export async function releaseRateLimit(
   rule: RateLimitRule,
   subject: string,
   now: Date = new Date()
 ): Promise<void> {
-  const row = await prisma.rateLimit.findUnique({
-    where: { key: `${rule.bucket}:${subject}` },
-  })
-  if (!row || row.resetAt <= now || row.count < rule.limit) return
-
-  throw new RateLimitError(
-    Math.max(1, Math.ceil((row.resetAt.getTime() - now.getTime()) / 1000))
-  )
+  const key = `${rule.bucket}:${subject}`
+  await prisma.$executeRaw`
+    UPDATE rate_limits SET "count" = GREATEST("count" - 1, 0)
+    WHERE "key" = ${key} AND "reset_at" > ${now}`
 }
 
 /** Menghapus penghitung yang jendelanya sudah lewat (dipanggil job berkala). */

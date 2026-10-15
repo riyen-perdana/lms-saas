@@ -5,10 +5,10 @@ import { afterAll, describe, expect, it } from "vitest"
 import { prisma } from "@/db/client"
 import {
   RateLimitError,
-  assertRateLimit,
   clientAddress,
   consumeRateLimit,
   purgeExpiredRateLimits,
+  releaseRateLimit,
 } from "@/lib/rate-limit"
 
 const bucket = `test-${randomUUID().slice(0, 8)}`
@@ -34,7 +34,9 @@ describe("consumeRateLimit", () => {
     for (let i = 0; i < 3; i++) {
       await consumeRateLimit(rule, "2.2.2.2", now)
     }
-    await expect(consumeRateLimit(rule, "3.3.3.3", now)).resolves.toBeUndefined()
+    await expect(
+      consumeRateLimit(rule, "3.3.3.3", now)
+    ).resolves.toBeUndefined()
   })
 
   it("membuka kembali setelah jendela berakhir", async () => {
@@ -43,7 +45,9 @@ describe("consumeRateLimit", () => {
       await consumeRateLimit(rule, "4.4.4.4", start)
     }
     const later = new Date(start.getTime() + 61_000)
-    await expect(consumeRateLimit(rule, "4.4.4.4", later)).resolves.toBeUndefined()
+    await expect(
+      consumeRateLimit(rule, "4.4.4.4", later)
+    ).resolves.toBeUndefined()
   })
 
   it("melaporkan sisa waktu tunggu", async () => {
@@ -79,32 +83,48 @@ describe("clientAddress", () => {
   })
 })
 
-describe("assertRateLimit", () => {
-  const checkRule = { bucket: `${bucket}-assert`, limit: 2, windowSeconds: 60 }
+describe("releaseRateLimit", () => {
+  const relRule = { bucket: `${bucket}-rel`, limit: 5, windowSeconds: 60 }
   const now = new Date("2026-10-14T10:00:00Z")
+  const countOf = async (subject: string) =>
+    (
+      await prisma.rateLimit.findUnique({
+        where: { key: `${relRule.bucket}:${subject}` },
+      })
+    )?.count ?? null
 
-  it("tidak menambah hitungan dan menolak setelah batas tercapai", async () => {
-    await assertRateLimit(checkRule, "a", now)
-    await consumeRateLimit(checkRule, "a", now)
-    await assertRateLimit(checkRule, "a", now)
-    await consumeRateLimit(checkRule, "a", now)
-
-    await expect(assertRateLimit(checkRule, "a", now)).rejects.toBeInstanceOf(
-      RateLimitError
-    )
-
-    const row = await prisma.rateLimit.findUniqueOrThrow({
-      where: { key: `${checkRule.bucket}:a` },
-    })
-    expect(row.count).toBe(2)
+  it("mengurangi hitungan satu", async () => {
+    await consumeRateLimit(relRule, "a", now)
+    await consumeRateLimit(relRule, "a", now)
+    await releaseRateLimit(relRule, "a", now)
+    expect(await countOf("a")).toBe(1)
   })
 
-  it("melepas setelah jendela lewat", async () => {
+  it("tidak turun di bawah nol", async () => {
+    await consumeRateLimit(relRule, "b", now)
+    await releaseRateLimit(relRule, "b", now)
+    await releaseRateLimit(relRule, "b", now)
+    await releaseRateLimit(relRule, "b", now)
+    expect(await countOf("b")).toBe(0)
+  })
+
+  it("tidak melakukan apa pun bila baris tidak ada", async () => {
+    await releaseRateLimit(relRule, "tidak-ada", now)
+    expect(await countOf("tidak-ada")).toBeNull()
+  })
+
+  it("tidak mengubah jendela yang sudah lewat", async () => {
+    await consumeRateLimit(relRule, "c", now)
     const later = new Date(now.getTime() + 61_000)
-    await assertRateLimit(checkRule, "a", later)
+    await releaseRateLimit(relRule, "c", later)
+    expect(await countOf("c")).toBe(1)
   })
 
   it("subjek lain tidak terpengaruh", async () => {
-    await assertRateLimit(checkRule, "b", now)
+    await consumeRateLimit(relRule, "d", now)
+    await consumeRateLimit(relRule, "e", now)
+    await releaseRateLimit(relRule, "d", now)
+    expect(await countOf("d")).toBe(0)
+    expect(await countOf("e")).toBe(1)
   })
 })

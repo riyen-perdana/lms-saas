@@ -34,6 +34,7 @@ let schoolId: string
 let host: string
 let aniPin: string
 let budiPin: string
+let ciciPin: string
 
 async function createStudent(nis: string, name: string) {
   const user = await admin.user.create({
@@ -77,6 +78,10 @@ beforeAll(async () => {
   const budi = await createStudent("7002", "Budi")
   aniPin = (await issueStudentPin(schoolId, ACTOR, ani.id)).pin
   budiPin = (await issueStudentPin(schoolId, ACTOR, budi.id)).pin
+  const cici = await createStudent("7003", "Cici")
+  ciciPin = (await issueStudentPin(schoolId, ACTOR, cici.id)).pin
+  const dedi = await createStudent("7004", "Dedi")
+  await issueStudentPin(schoolId, ACTOR, dedi.id)
 })
 
 afterAll(async () => {
@@ -171,16 +176,50 @@ describe("loginWithStudentPin", () => {
 
   it("batas per NIS: 20 kegagalan dari berbagai IP mengunci NIS itu untuk semua IP", async () => {
     for (let i = 0; i < STUDENT_LOGIN_LIMITS.perNis.limit; i++) {
-      // Kegagalan NIS 7001 dari test sebelumnya sudah terhitung, jadi hitungan
-      // ke-20 bisa melewati batas; yang dicari hanya efek kuncinya.
-      await consumeRateLimit(
-        STUDENT_LOGIN_LIMITS.perNis,
-        `${schoolId}:7001`
-      ).catch(() => undefined)
+      await consumeRateLimit(STUDENT_LOGIN_LIMITS.perNis, `${schoolId}:7003`)
     }
     await expectLoginError(
-      loginWithStudentPin({ host, ip: ip("fresh"), nis: "7001", pin: aniPin }),
+      loginWithStudentPin({
+        host,
+        ip: ip("fresh"),
+        nis: "7003",
+        pin: ciciPin,
+      }),
       "RATE_LIMITED"
     )
+  })
+
+  it("30 percobaan salah paralel: tepat 5 diverifikasi, 25 ditolak batas laju", async () => {
+    const parallelIp = ip("parallel")
+    const results = await Promise.allSettled(
+      Array.from({ length: 30 }, () =>
+        loginWithStudentPin({
+          host,
+          ip: parallelIp,
+          nis: "7004",
+          pin: "100000",
+        })
+      )
+    )
+    const codes = results.map((result) => {
+      expect(result.status).toBe("rejected")
+      const reason = (result as PromiseRejectedResult).reason
+      expect(reason).toBeInstanceOf(StudentLoginError)
+      return (reason as StudentLoginError).code
+    })
+    expect(codes.filter((code) => code === "INVALID")).toHaveLength(
+      STUDENT_LOGIN_LIMITS.perNisIp.limit
+    )
+    expect(codes.filter((code) => code === "RATE_LIMITED")).toHaveLength(
+      30 - STUDENT_LOGIN_LIMITS.perNisIp.limit
+    )
+
+    // Permintaan yang ditolak dikembalikan, jadi hitungan berhenti di batas.
+    const row = await prisma.rateLimit.findUniqueOrThrow({
+      where: {
+        key: `${STUDENT_LOGIN_LIMITS.perNisIp.bucket}:${schoolId}:7004:${parallelIp}`,
+      },
+    })
+    expect(row.count).toBe(STUDENT_LOGIN_LIMITS.perNisIp.limit)
   })
 })

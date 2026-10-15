@@ -12,6 +12,7 @@ import { prisma } from "@/db/client"
 import { PrismaClient } from "@/generated/prisma/client"
 import { issueStudentPin } from "@/features/student-pin/service"
 import { auth } from "@/lib/auth"
+import { APIError } from "better-auth/api"
 
 // Fixture lewat `admin` (DATABASE_URL, superuser); `prisma` aplikasi (role
 // biasa, kena RLS) hanya dipakai untuk tabel global rate_limits.
@@ -93,18 +94,21 @@ describe("POST /sign-in/student-pin", () => {
       asResponse: true,
     })
     expect(response.status).toBe(401)
-    expect(response.headers.get("set-cookie") ?? "").not.toContain("session_token")
+    expect(response.headers.get("set-cookie") ?? "").not.toContain(
+      "session_token"
+    )
     expect(await response.text()).toContain("NIS atau PIN salah.")
   })
 
   it("terkunci: 429", async () => {
     const attacker = "lock"
     for (let i = 0; i < 5; i++) {
-      await auth.api.signInStudentPin({
+      const failed = await auth.api.signInStudentPin({
         body: { nis: "8001", pin: "100000" },
         headers: headersFor(attacker),
         asResponse: true,
       })
+      expect(failed.status).toBe(401)
     }
     const response = await auth.api.signInStudentPin({
       body: { nis: "8001", pin },
@@ -115,11 +119,18 @@ describe("POST /sign-in/student-pin", () => {
   })
 
   it("siswa tidak punya akun credential: sign-in email dengan PIN gagal", async () => {
-    await expect(
-      auth.api.signInEmail({
+    const error = await auth.api
+      .signInEmail({
         body: { email, password: pin },
         headers: headersFor("email"),
       })
-    ).rejects.toBeDefined()
+      .then(
+        () => null,
+        (reason: unknown) => reason
+      )
+    expect(error).toBeInstanceOf(APIError)
+    expect((error as APIError).status).toBe("UNAUTHORIZED")
+    expect((error as APIError).statusCode).toBe(401)
+    expect((error as APIError).body?.code).toBe("INVALID_EMAIL_OR_PASSWORD")
   })
 })
