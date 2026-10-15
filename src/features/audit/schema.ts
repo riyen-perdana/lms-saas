@@ -13,6 +13,8 @@ export const AUDIT_ACTIONS = {
   "course.remove": "Penghapusan kelas pembelajaran",
   "homeroom.clear": "Pencabutan wali kelas",
   "user.password_reset": "Permintaan reset sandi pengguna",
+  "student.pin_issue": "Pembuatan atau reset PIN siswa",
+  "student.pin_issue_bulk": "Pembuatan PIN siswa massal per rombel",
 } as const
 
 export type AuditAction = keyof typeof AUDIT_ACTIONS

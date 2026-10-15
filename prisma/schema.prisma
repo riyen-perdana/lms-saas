@@ -132,6 +132,7 @@ model School {
   enrollments   Enrollment[]
   courses       Course[]
   parentLinks   ParentLink[]
+  studentPins   StudentPin[]
   importBatches ImportBatch[]
   importErrors  ImportError[]
   auditLogs     AuditLog[]
@@ -485,6 +486,7 @@ model Student {
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   enrollments Enrollment[]
   parentLinks ParentLink[]
+  pins        StudentPin[]
 
   createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -541,6 +543,24 @@ model ParentLink {
   @@index([schoolId, studentId])
   @@index([schoolId, parentUserId])
   @@map("parent_links")
+}
+
+/// PIN login siswa (US-01). Hanya hash (scrypt) yang disimpan; PIN asli hanya
+/// terlihat sekali saat dibuat. Satu baris per siswa; membuat ulang menimpa.
+model StudentPin {
+  id        String @id @default(uuid(7)) @db.Uuid
+  schoolId  String @map("school_id") @db.Uuid
+  studentId String @map("student_id") @db.Uuid
+  pinHash   String @map("pin_hash") @db.VarChar(255)
+
+  school  School  @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([schoolId, studentId])
+  @@map("student_pins")
 }
 
 /// Kelas pembelajaran (OB-03): satu kombinasi rombel x mapel x guru pada satu
