@@ -8,7 +8,7 @@ import { getRequestHeaders } from "@tanstack/react-start/server"
 import { getActiveSemester, listClassrooms } from "@/features/academic/service"
 import { isSchoolBlocked } from "@/features/auth/policy"
 import { schoolAdminMiddleware } from "@/features/auth/server/school-admin"
-import { getSchoolAccess } from "@/features/auth/service"
+import { schoolParentMiddleware } from "@/features/auth/server/school-parent"
 import {
   classroomIdSchema,
   joinExistingSchema,
@@ -200,19 +200,6 @@ export const joinWithSessionFn = createServerFn({ method: "POST" })
   )
 
 /** Anak yang tertaut ke akun yang sedang login (hanya peran parent). */
-export const listMyChildrenFn = createServerFn({ method: "GET" }).handler(
-  async ({ context }) => {
-    const school = context.tenant.school
-    if (!school || isSchoolBlocked(school.status))
-      throw new Response("Tidak ditemukan", { status: 404 })
-
-    const session = await auth.api.getSession({ headers: getRequestHeaders() })
-    if (!session) throw new Response("Belum login", { status: 401 })
-
-    const access = await getSchoolAccess(school.id, session.user.id)
-    if (access?.role !== "parent")
-      throw new Response("Tidak punya akses", { status: 403 })
-
-    return listChildren(school.id, session.user.id)
-  }
-)
+export const listMyChildrenFn = createServerFn({ method: "GET" })
+  .middleware([schoolParentMiddleware])
+  .handler(({ context }) => listChildren(context.schoolId, context.userId))

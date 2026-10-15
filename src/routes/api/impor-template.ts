@@ -5,7 +5,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { z } from "zod"
 
 import { buildTemplate } from "@/features/people-import/excel"
-import { requireSchoolAdminForDownload } from "@/features/people-import/server/require-admin"
+import { requireSchoolRoleForRequest } from "@/features/auth/server/authorize-request"
 import { IMPORT_KIND_LABELS, XLSX_CONTENT_TYPE } from "@/features/people-import/schema"
 
 const querySchema = z.object({ jenis: z.enum(["teachers", "students"]) })
@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api/impor-template")({
   server: {
     handlers: {
       GET: async ({ request }) => {
-        await requireSchoolAdminForDownload(request)
+        await requireSchoolRoleForRequest(request, ["school_admin"])
 
         const parsed = querySchema.safeParse({
           jenis: new URL(request.url).searchParams.get("jenis"),

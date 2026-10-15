@@ -5,14 +5,14 @@
 import { createFileRoute } from "@tanstack/react-router"
 
 import { PeopleImportError, getImportErrorReport } from "@/features/people-import/service"
-import { requireSchoolAdminForDownload } from "@/features/people-import/server/require-admin"
+import { requireSchoolRoleForRequest } from "@/features/auth/server/authorize-request"
 import { XLSX_CONTENT_TYPE } from "@/features/people-import/schema"
 
 export const Route = createFileRoute("/api/laporan-impor/$batchId")({
   server: {
     handlers: {
       GET: async ({ params, request }) => {
-        const { schoolId } = await requireSchoolAdminForDownload(request)
+        const { schoolId } = await requireSchoolRoleForRequest(request, ["school_admin"])
 
         let report
         try {

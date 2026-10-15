@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
 Terakhir diperbarui: 2026-10-15
-Pemeriksaan: typecheck, lint, 261 test unit, 89 E2E (Playwright, 1 skipped), dan `pnpm build` hijau.
+Pemeriksaan: typecheck, lint, 284 test unit, 89 E2E (Playwright, 1 skipped), dan `pnpm build` hijau.
 
 ## Status per fase (PRD §10)
 
@@ -9,7 +9,7 @@ Pemeriksaan: typecheck, lint, 261 test unit, 89 E2E (Playwright, 1 skipped), dan
 | --- | --- |
 | F0 Fondasi | **Selesai** — tenant, RLS, Better Auth, login per subdomain, CI |
 | F1 Landing & registrasi | **Selesai** (utang di bawah) |
-| F2 Onboarding & pengguna | **Berjalan** — OB-01 s.d. OB-05 dan US-04 selesai; sisa US-03, US-02, US-01 (login siswa SD via NIS+PIN) |
+| F2 Onboarding & pengguna | **Berjalan** — OB-01 s.d. OB-05, US-04, dan US-03 selesai; sisa US-02, US-01 (login siswa SD via NIS+PIN) |
 
 ### Sudah jadi di F0–F1
 - Resolusi subdomain, `tenantDb` + RLS, test isolasi antar sekolah
@@ -35,6 +35,7 @@ Pemeriksaan: typecheck, lint, 261 test unit, 89 E2E (Playwright, 1 skipped), dan
 - OB-04 selesai: kenaikan kelas / pergantian semester di `src/features/year-rollover` (tanpa migrasi baru), halaman `/tahun-ajaran` (daftar semester + aktifkan, tambah tahun ajaran berikutnya, panel kenaikan: sumber -> tujuan -> pratinjau -> jalankan)
 - OB-05 selesai: tabel `parent_links` (RLS, indeks unik parsial), modul `src/features/parent-link`, halaman admin `/orang-tua` (kode per siswa + massal per rombel -> CSV, cabut) dan halaman publik `/gabung` (orang tua mendaftar/menautkan lewat kode); beranda orang tua menampilkan anak tertaut
 - US-04 selesai: tabel `audit_logs` (RLS, hak UPDATE/DELETE dicabut dari `edusaas_app`), modul `src/features/audit` (`recordAudit`, `listAuditLogs`), halaman admin `/audit` (filter aksi, paginasi kursor). Dicatat: aktivasi paket, tangguhkan/aktifkan sekolah, mulai impor, kenaikan kelas, cabut tautan orang tua, hapus kelas pembelajaran, cabut wali kelas
+- US-03 selesai: keputusan izin satu pintu di `features/auth/authorize.ts` (`authorizeSchoolRequest`, murni + teruji lewat matriks peran x status sekolah x sekolah lain); helper server `server/authorize-request.ts`; middleware `schoolAdminMiddleware` dan `schoolParentMiddleware`; route API unduhan memakai `requireSchoolRoleForRequest`. `permission-audit.test.ts` memindai kode: setiap `createServerFn` WAJIB memakai salah satu middleware penjaga atau terdaftar di `PUBLIC_SERVER_FNS` (dengan alasan); setiap route `api/*` WAJIB memakai `requireSchoolRoleForRequest` atau terdaftar di `PUBLIC_API_ROUTES`. `/api/tenant` kini 404 di produksi
 - Server function sekolah memakai `schoolAdminMiddleware` (login, peran school_admin, tolak suspended/readonly)
 - Belum: daftar/ubah data guru & siswa di UI (OB-02 baru impor), log audit (US-04)
 - E2E mematikan devtools lewat `VITE_E2E`; matikan server dev manual sebelum `pnpm test:e2e` agar tidak dipakai ulang
@@ -72,6 +73,7 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - OB-05: pendaftaran orang tua tidak otomatis login (diarahkan ke /login); email orang tua belum diverifikasi (sama seperti keputusan verifikasi email lain). Email yang sudah terdaftar diminta login dulu; akun berperan lain di sekolah yang sama (mis. guru) ditolak. Batas laju penukaran: per IP (`PARENT_JOIN_RATE_LIMIT`, default 10/15 menit) + per sekolah 300/jam; `clientAddress` memercayai `x-forwarded-for`, jadi di produksi aplikasi harus di belakang proxy tepercaya
 - OB-05: portal nilai orang tua tetap F5; saat ini orang tua hanya melihat nama anak + rombel di /beranda. Beranda kini menampilkan menu admin hanya untuk `school_admin`
 - US-04: `recordAudit(db, schoolId, actor, entry)` dipanggil DI DALAM transaksi aksinya (aksi gagal = log batal). `actor` (`{userId, role}`) wajib dan menjadi parameter kedua service yang mencatat; datang dari `context.actor` di `schoolAdminMiddleware` / `platformAdminMiddleware`. Aksi Super Admin tercatat ke log sekolah yang dituju (RLS mengizinkan `app.is_platform`) dan tampil di `/audit` sekolah. `before`/`after` hanya field relevan, tanpa sandi/hash/kode. Aksi baru: tambah ke `AUDIT_ACTIONS` (`audit/schema.ts`). WAJIB: modul nilai (perubahan nilai) dan impersonate memanggil `recordAudit` saat dibuat
+- US-03: peran baru (mis. guru) = tambah middleware top-level baru seperti `school-parent.ts` (panggil `authorizeHeaders` dengan daftar peran) lalu daftarkan namanya di `SERVER_FN_GUARDS` pada `permission-audit.test.ts`. Izin per sumber daya (guru hanya kelasnya sendiri) dikerjakan bersama modul LMS terkait. Suspended = 403 untuk semua fungsi sekolah (sebelumnya orang tua mendapat 404)
 - OB-03: Error memakai kode yang sama dengan modul lain: `INVALID | DUPLICATE | NOT_FOUND` di `TeachingError`
 - OB-02: impor memvalidasi tiap baris dan berhenti di batch yang gagal total (sheet/judul kolom salah, berkas rusak); baris cacat lain hanya jadi baris gagal, tidak membatalkan impor.
 - OB-02: baris duplikat (dalam berkas, huruf besar/kecil berbeda, atau sudah ada di sekolah) **ditolak**, bukan menimpa. Impor ulang setelah koreksi aman; konsekuensinya perbaikan data harus lewat modul lain (belum ada UI ubah).
@@ -97,6 +99,9 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - Setiap server function sekolah baru **wajib** mengecek status sekolah (suspended), selain permission
 
 ## Jebakan
+
+- Middleware TanStack Start HARUS dideklarasikan top-level (`export const x = createMiddleware().server(...)`). Pabrik fungsi yang membuat middleware di dalamnya (`requireSchoolRole(...)`) membuat kode server (Prisma, `node:url`) bocor ke bundel klien: tombol login tetap disabled karena hydrate gagal, semua E2E gagal. Taruh logika di helper server-only (`authorize-request.ts`) dan buat middleware per peran
+- Flake lama: `platform/service.test.ts > getOverview` sesekali gagal saat seluruh suite berjalan paralel (menghitung trial lintas semua sekolah dengan `take: 10`, terpengaruh test file lain); lulus saat diulang
 - Setelah `prisma migrate`/`generate`, matikan server dev lama di port 3000 sebelum menjalankan E2E.
 - `pnpm generate-routes` menghapus blok `declare module '@tanstack/react-start'` (interface `Register`) di akhir `src/routeTree.gen.ts`. Blok itu wajib dikembalikan setiap kali regenerate, kalau tidak tipe `context` server function (`context.tenant`) jadi `undefined` dan `pnpm typecheck` gagal di beberapa file yang tidak disentuh.
 - `prisma migrate reset` tidak menjalankan seed di environment ini; setelah reset harus `pnpm db:seed`, kalau tidak test registrasi/tenant gagal (paket "trial" hilang).

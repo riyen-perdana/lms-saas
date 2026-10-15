@@ -10,6 +10,10 @@ export const Route = createFileRoute("/api/tenant")({
   server: {
     handlers: {
       GET: async ({ context }) => {
+        // Diagnostik development saja; di produksi tidak boleh membuka data tenant.
+        if (process.env.NODE_ENV === "production") {
+          return new Response("Tidak ditemukan", { status: 404 })
+        }
         const { tenant } = context as { tenant: unknown }
 
         return Response.json(tenant)
