@@ -1,7 +1,7 @@
 # Progres Pengerjaan EduSaaS
 
 Terakhir diperbarui: 2026-10-15
-Pemeriksaan: typecheck, lint (2 warning lama di `ui/sidebar.tsx`), dan 308 test unit hijau. E2E (Playwright): 97 lulus, 1 skipped, 2 gagal — keduanya `platform.spec.ts > Super Admin melihat ringkasan dan daftar sekolah` (chromium + mobile-360), bukan dari US-02: heading "Ringkasan" hilang sejak commit `8ab9505` (dashboard platform gaya SKPI), spec belum disesuaikan. `pnpm build` tidak dijalankan pada pemeriksaan ini.
+Pemeriksaan: typecheck, lint (2 warning lama di `ui/sidebar.tsx`), dan 308 test unit hijau. E2E (Playwright): 97 lulus, 1 skipped, 2 gagal â€” keduanya `platform.spec.ts > Super Admin melihat ringkasan dan daftar sekolah` (chromium + mobile-360), bukan dari US-02: heading "Ringkasan" hilang sejak commit `8ab9505` (dashboard platform gaya SKPI), spec belum disesuaikan. `pnpm build` tidak dijalankan pada pemeriksaan ini.
 
 ## Status per fase (PRD Â§10)
 
@@ -87,7 +87,7 @@ Email di development tidak dikirim sungguhan: lihat konsol server atau folder `.
 - OB-02: berkas sumber dihapus dari storage setelah diproses (data pribadi siswa, UU PDP); laporan error disimpan per baris di `import_errors` sehingga bisa diunduh ulang kapan saja.
 - OB-02: Route unduhan memakai helper sendiri `requireSchoolAdminForDownload()` karena `schoolAdminMiddleware` hanya untuk server function.
 - US-02: `schoolHost` kini di `src/lib/tenant/host.ts` (sebelumnya di modul lain) supaya dipakai bersama oleh impor dan reset sandi
-- US-02: siswa tidak menampilkan email di daftar `/pengguna` (email palsu `<nis>@<slug>.invalid`); tampil "—"
+- US-02: siswa tidak menampilkan email di daftar `/pengguna` (email palsu `<nis>@<slug>.invalid`); tampil "â€”"
 - US-02: email reset tidak di-await di dalam transaksi, jadi audit `user.password_reset` tercatat walau pengiriman email gagal diam-diam (admin hanya tahu "permintaan diterima")
 - US-02: daftar dibatasi 100 baris; saat terpotong, urutan dari DB dan urutan `localeCompare` bisa berbeda sehingga baris yang terpotong tidak selalu yang terakhir menurut tampilan; admin diminta mempersempit pencarian
 - Shell sekolah: layout pathless `src/routes/(school)/_app.tsx` memegang penjaga akses + `SchoolShell`; route admin hanya cek `context.role`. `/setup` dan `/gabung` di luar shell. Menu per peran didefinisikan di `school-nav.ts` (menu modul baru ditambahkan di sana). Halaman admin selain beranda kini juga mengarahkan admin yang belum setup ke `/setup`. Halaman-halaman admin masih memakai `max-w-3xl` tanpa `mx-auto` (rata kiri di dalam shell) sampai dirapikan di Tahap 2/3.
