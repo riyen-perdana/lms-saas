@@ -38,17 +38,21 @@ Endpoint `POST /api/auth/sign-in/student-pin`, body `{ nis, pin }` (Zod):
 
 Sekolah `suspended`/`readonly` ditangani oleh `getAccess` setelah login, sama seperti login email.
 
-### Batas laju (hanya kegagalan)
+### Batas laju (hanya kegagalan, dicadangkan secara atomik)
 
-Menambah satu fungsi `assertRateLimit(rule, subject)` di `src/lib/rate-limit.ts`: membaca penghitung tanpa menambah, melempar `RateLimitError` bila `count >= limit` dan jendela belum lewat. Kegagalan dicatat dengan `consumeRateLimit` yang sudah ada.
+Setiap percobaan lebih dulu MENCADANGKAN jatah pada ketiga bucket dengan `consumeRateLimit` (satu upsert atomik; melempar `RateLimitError` bila hitungan melewati batas). Hanya setelah itu PIN diverifikasi: bila gagal, jatah tetap terpakai; bila berhasil atau terjadi galat non-tebakan (mis. galat database), jatah dikembalikan dengan `releaseRateLimit` (pengurangan atomik, tidak di bawah nol). Bila pencadangan ditolak, jatah yang sudah dicadangkan pada percobaan itu (termasuk yang menolak) juga dikembalikan, jadi permintaan yang ditolak tidak menggelembungkan hitungan.
+
+Alasan: skema "cek dulu, catat kegagalan sesudah verifikasi" membiarkan ledakan permintaan paralel lolos semua dari pengecekan sebelum kegagalan pertama tercatat (scrypt lambat), sehingga batas bisa dilewati. Pencadangan atomik membatasi jumlah percobaan paralel sebesar `limit`.
 
 | Bucket | Kunci | Batas | Jendela |
 | --- | --- | --- | --- |
-| `student-pin` | sekolah + NIS + IP | 5 kegagalan | 15 menit |
-| `student-pin-ip` | IP | 60 kegagalan | 15 menit |
-| `student-pin-nis` | sekolah + NIS | 20 kegagalan | 1 jam |
+| `student-pin` | sekolah + NIS + IP | 5 | 15 menit |
+| `student-pin-ip` | IP | 60 | 15 menit |
+| `student-pin-nis` | sekolah + NIS | 20 | 1 jam |
 
-Login berhasil tidak menambah hitungan, jadi satu kelas yang login bersamaan lewat IP sekolah tidak saling memblokir.
+Login berhasil tidak menghabiskan jatah, jadi satu kelas yang login bersamaan lewat IP sekolah tidak saling memblokir. `assertRateLimit` (tambahan awal rencana) tidak jadi dipakai dan dihapus; `releaseRateLimit(rule, subject, now?)` ditambahkan di `src/lib/rate-limit.ts`.
+
+Catatan operasional: IP berasal dari `x-forwarded-for`; di produksi aplikasi harus berada di belakang proxy tepercaya yang menimpa `x-forwarded-for` dan `x-forwarded-host`, kalau tidak batas per-IP dan per-NIS+IP bisa dielakkan dengan header palsu (batas per-NIS tetap berlaku).
 
 ## Admin (modul `src/features/student-pin`)
 
@@ -68,7 +72,7 @@ Login berhasil tidak menambah hitungan, jadi satu kelas yang login bersamaan lew
 ## Pengujian (TDD)
 
 - Service (integrasi, `DATABASE_APP_URL`): PIN dibuat dan diverifikasi; hash tersimpan, bukan teks; reset mengganti PIN dan mencabut sesi; isolasi (admin sekolah A tidak bisa membuat PIN siswa sekolah B; NIS sama di dua sekolah tidak tertukar); audit tanpa PIN; massal hanya rombel itu.
-- Login/batas laju: PIN salah, NIS tidak ada, dan siswa dihapus/nonaktif memberi pesan sama; setelah 5 kegagalan NIS+IP, PIN benar pun ditolak; login berhasil tidak menambah hitungan; siswa lain dari IP yang sama tetap bisa masuk; `assertRateLimit` murni tidak menambah hitungan.
+- Login/batas laju: PIN salah, NIS tidak ada, dan siswa dihapus/nonaktif memberi pesan sama; setelah 5 kegagalan NIS+IP, PIN benar pun ditolak; login berhasil tidak menghabiskan jatah; siswa lain dari IP yang sama tetap bisa masuk; permintaan paralel (mis. 30 sekaligus) hanya meloloskan sebanyak batas ke verifikasi; `releaseRateLimit` mengurangi secara atomik dan tidak di bawah nol.
 - `permission-audit.test.ts` otomatis memindai server function baru.
 - E2E: admin membuat PIN di `/pengguna`, siswa (browser terpisah) login lewat tab Siswa dan sampai di `/beranda`; PIN salah gagal dengan pesan generik; reset membuat PIN lama tidak berlaku dan menendang sesi siswa.
 - Selesai bila `pnpm typecheck`, `pnpm lint`, `pnpm test`, dan `pnpm test:e2e` hijau tanpa pengecualian (AGENTS.md aturan 8 dan 11); PROGRESS.md diperbarui.

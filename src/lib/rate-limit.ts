@@ -47,6 +47,23 @@ export async function consumeRateLimit(
   }
 }
 
+/**
+ * Mengembalikan satu jatah yang sebelumnya dicadangkan dengan
+ * `consumeRateLimit` (mis. login berhasil, atau permintaan yang ditolak).
+ * Pengurangan atomik, tidak di bawah nol, dan hanya selama jendela masih
+ * terbuka (jendela yang sudah lewat akan dimulai ulang oleh consume).
+ */
+export async function releaseRateLimit(
+  rule: RateLimitRule,
+  subject: string,
+  now: Date = new Date()
+): Promise<void> {
+  const key = `${rule.bucket}:${subject}`
+  await prisma.$executeRaw`
+    UPDATE rate_limits SET "count" = GREATEST("count" - 1, 0)
+    WHERE "key" = ${key} AND "reset_at" > ${now}`
+}
+
 /** Menghapus penghitung yang jendelanya sudah lewat (dipanggil job berkala). */
 export async function purgeExpiredRateLimits(
   now: Date = new Date()
